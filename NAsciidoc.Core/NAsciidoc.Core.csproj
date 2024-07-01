@@ -10,6 +10,7 @@
     <CompilerGeneratedFilesOutputPath>$(BaseIntermediateOutputPath)/Generated</CompilerGeneratedFilesOutputPath>
 
     <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageTags>Asciidoc</PackageTags>
     <VersionPrefix>0.0.2</VersionPrefix>
 
     <IsTrimmable>true</IsTrimmable>
