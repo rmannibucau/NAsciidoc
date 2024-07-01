@@ -1,0 +1,17 @@
+bin
+obj
+out
+
+.idea
+*.iml
+*.iws
+*.ipr
+.vscode
+*.DotSettings.user
+
+_site
+generated
+templates/Singu*
+**/docs/commands/*.md
+!**/docs/commands/index.md
+

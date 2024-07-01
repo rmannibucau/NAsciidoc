@@ -1,0 +1,36 @@
+{
+  "build": {
+    "output": "_site",
+    "content": [
+      {
+        "files": "**/*.{md,yml}",
+        "exclude": [
+          "**/_site/**",
+          "**/generated/**/*.md"
+        ]
+      }
+    ],
+    "resource": [
+      {
+        "files": "**/images/*.jpg"
+      }
+    ],
+    "globalMetadata": {
+      "_appTitle": "NAsciidoc",
+      "_appName": "NAsciidoc",
+      "_enableSearch": true,
+      "_appFooter": "<span>Made with love by <a href=\"https://x.com/rmannibucau\" target=\"_blank\">@rmannibucau</a> using docfx.</span>",
+      "_appLogoPath": "images/avatar.jpg",
+      "pdf": false
+    },
+    "sitemap": {
+      "baseUrl": "https://rmannibucau.github.com/NAsciidoc",
+      "priority": 0.1,
+      "changefreq": "weekly"
+    },
+    "template": [
+      "default",
+      "modern"
+    ]
+  }
+}
