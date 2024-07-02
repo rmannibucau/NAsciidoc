@@ -1579,7 +1579,7 @@ namespace NAsciidoc.Parser
                                                 new ConditionalBlock(
                                                     new ConditionalBlock.Ifeval(
                                                         ParseCondition(
-                                                            macro.Label.Trim(),
+                                                            string.IsNullOrWhiteSpace(macro.Label) ? line[(i+1)..end] : macro.Label.Trim(),
                                                             currentAttributes
                                                         )
                                                     ).Test,
