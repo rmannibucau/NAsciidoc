@@ -113,6 +113,17 @@ namespace NAsciidoc.Parser
                 {
                     collector.TryAdd("id", keyValue[1..]);
                 }
+                else if (keyValue.StartsWith('%'))
+                {
+                    if (collector.TryGetValue("options", out var opts))
+                    {
+                        collector["options"] = $"{opts} {keyValue[1..]}";
+                    }
+                    else
+                    {
+                        collector.Add("options", keyValue[1..]);
+                    }
+                }
                 else
                 {
                     collector.TryAdd(defaultKey, keyValue);
@@ -171,15 +182,30 @@ namespace NAsciidoc.Parser
             }
             if (nestedOptsSupport)
             {
-                map.Remove("opts", out var opts);
-                if (opts != null)
+                map.Remove("opts", out var nestedOpts);
+                if (nestedOpts is null && map.Remove("options", out var nestedOpts2))
                 {
-                    foreach (var opt in DoParseOptions(opts, "opts", false))
+                    nestedOpts = nestedOpts2;
+                }
+                if (nestedOpts != null)
+                {
+                    foreach (var opt in DoParseOptions(nestedOpts, "opts", false))
                     {
                         map.Add(opt.Key, opt.Value);
                     }
                 }
             }
+
+            // opts will alias options since both are equivalent
+            if (map.TryGetValue("opts", out string? opts) && !map.ContainsKey("options"))
+            {
+                map.Add("options", opts);
+            }
+            if (map.TryGetValue("options", out string? opts2) && !map.ContainsKey("opts"))
+            {
+                map.Add("opts", opts2);
+            }
+
             return map;
         }
 
@@ -1579,7 +1605,9 @@ namespace NAsciidoc.Parser
                                                 new ConditionalBlock(
                                                     new ConditionalBlock.Ifeval(
                                                         ParseCondition(
-                                                            string.IsNullOrWhiteSpace(macro.Label) ? line[(i+1)..end] : macro.Label.Trim(),
+                                                            string.IsNullOrWhiteSpace(macro.Label)
+                                                                ? line[(i + 1)..end]
+                                                                : macro.Label.Trim(),
                                                             currentAttributes
                                                         )
                                                     ).Test,
@@ -2073,6 +2101,7 @@ namespace NAsciidoc.Parser
             );
         }
 
+        // todo: support footer + alignments
         private Table ParseTable(
             Reader reader,
             IDictionary<string, string>? options,
@@ -2162,7 +2191,24 @@ namespace NAsciidoc.Parser
                                 );
                         }
                         // contains("d") == default
-                        return c => NewText(null, string.Join('\n', c), null);
+                        return c =>
+                        {
+                            var content = DoParse(
+                                new Reader(c),
+                                line => true,
+                                resolver,
+                                currentAttributes,
+                                false
+                            );
+                            if (content.Count == 1)
+                            {
+                                return content[0];
+                            }
+                            return new Paragraph(
+                                content,
+                                ImmutableDictionary<string, string>.Empty
+                            );
+                        };
                     })
                     .ToList() ?? []
                 : [];

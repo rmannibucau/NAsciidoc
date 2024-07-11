@@ -431,7 +431,7 @@ public class AsciidoctorLikeHtmlRendererTests
     {
         AssertRenderingContent(
             """
-            [cols="1,1"]
+            [cols="1,1",opts="header"]
             |===
             |Cell in column 1, header row |Cell in column 2, header row 
                             
@@ -477,6 +477,43 @@ public class AsciidoctorLikeHtmlRendererTests
             Cell in column 1, row 4    </td>
                 <td>
             Cell in column 2, row 4    </td>
+               </tr>
+              </tbody>
+             </table>
+            """
+        );
+    }
+
+    [Fact]
+    public void TableWithInlineAdoc()
+    {
+        AssertRenderingContent(
+            """
+            [cols="1,1"]
+            |===
+            |Cell in column 1, header row |Cell in column 2, header row 
+                            
+            |Cell in column 1, `row 1`
+            |===
+            """,
+            """
+            <table class="tableblock frame-all grid-all stretch">
+              <colgroup>
+               <col width="50%">
+               <col width="50%">
+              </colgroup>
+              <tbody>
+               <tr>
+                <td>
+            Cell in column 1, header row     </td>
+                <td>
+            Cell in column 2, header row    </td>
+               </tr>
+               <tr>
+                <td>
+             <div class="paragraph">
+            Cell in column 1, <code>row 1</code> </div>
+                </td>
                </tr>
               </tbody>
              </table>
@@ -851,6 +888,8 @@ public class AsciidoctorLikeHtmlRendererTests
             }
         );
         renderer.VisitBody(doc);
-        Assert.Equal(html.Trim(), renderer.Result().Trim());
+        var expected = html.Trim();
+        var actual = renderer.Result().Trim();
+        Assert.Equal(expected, actual);
     }
 }

@@ -874,27 +874,32 @@ public class AsciidoctorLikeHtmlRenderer : Visitor<string>
             }
             builder.Append("  </colgroup>\n");
 
-            // todo: handle headers+classes without assuming first row is headers - update parser - an options would be better pby?
-            builder.Append("  <thead>\n");
-            builder.Append("   <tr>\n");
-            foreach (var it in firstRow)
+            var hasHeader =
+                element.Options.TryGetValue("options", out var options)
+                && options.Contains("header");
+            if (hasHeader) // todo: handle headers+classes without assuming first row is headers - update parser - an options would be better pby?
             {
-                builder.Append("    <th>\n");
-                VisitElement(it is Code c ? new Text([], c.Value, c.Options) : it);
-                builder.Append("    </th>\n");
+                builder.Append("  <thead>\n");
+                builder.Append("   <tr>\n");
+                foreach (var it in firstRow)
+                {
+                    builder.Append("    <th>\n");
+                    VisitElement(it is Code c ? new Text([], c.Value, c.Options) : it);
+                    builder.Append("    </th>\n");
+                }
+                builder.Append("   </tr>\n");
+                builder.Append("  </thead>\n");
             }
-            builder.Append("   </tr>\n");
-            builder.Append("  </thead>\n");
 
-            if (element.Elements.Count > 1)
+            if (!hasHeader || element.Elements.Count > 1)
             {
                 builder.Append("  <tbody>\n");
-                foreach (var row in element.Elements.Skip(1))
+                foreach (var row in hasHeader ? element.Elements.Skip(1) : element.Elements)
                 {
                     builder.Append("   <tr>\n");
                     foreach (var col in row)
                     {
-                        builder.Append("    <td>\n");
+                        builder.Append("    <td>\n"); // todo: tableblock halign-left valign-top and friends
                         VisitElement(col);
                         builder.Append("    </td>\n");
                     }
