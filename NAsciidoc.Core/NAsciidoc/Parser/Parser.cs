@@ -2101,7 +2101,7 @@ namespace NAsciidoc.Parser
             );
         }
 
-        // todo: support footer + alignments
+        // todo: support footer, alignments and spans
         private Table ParseTable(
             Reader reader,
             IDictionary<string, string>? options,
@@ -2118,97 +2118,34 @@ namespace NAsciidoc.Parser
                     .Split(',')
                     .Select(it => it.Trim())
                     .Where(it => !string.IsNullOrWhiteSpace(it))
-                    .Select<string, Func<IList<string>, IElement>>(i =>
+                    .Select(i =>
                     {
-                        if (i.Contains('a'))
-                        { // asciidoc
-                            return c =>
-                            {
-                                var content = DoParse(
-                                    new Reader(c),
-                                    line => true,
-                                    resolver,
-                                    currentAttributes,
-                                    true
-                                );
-                                if (content.Count == 1)
-                                {
-                                    return content[0];
-                                }
-                                return new Paragraph(
-                                    content,
-                                    ImmutableDictionary<string, string>.Empty
-                                );
-                            };
-                        }
-                        if (i.Contains('e'))
-                        { // emphasis
-                            return c => new Text(
-                                [Text.Styling.Emphasis],
-                                string.Join('\n', c),
-                                ImmutableDictionary<string, string>.Empty
-                            );
-                        }
-                        if (i.Contains('s'))
-                        { // strong
-                            return c => new Text(
-                                [Text.Styling.Bold],
-                                string.Join('\n', c),
-                                ImmutableDictionary<string, string>.Empty
-                            );
-                        }
-                        if (i.Contains('l') || i.Contains('m'))
-                        { // literal or monospace
-                            return c =>
-                            {
-                                var elements = string.Join(
-                                    "",
-                                    HandleIncludes(
-                                            string.Join('\n', c),
-                                            resolver,
-                                            currentAttributes,
-                                            true
-                                        )
-                                        .Select(e =>
-                                            e is Text t ? t.Value : e.ToString() /* FIXME */
-                                        )
-                                );
-                                return new Code(
-                                    elements,
-                                    ImmutableList<CallOut>.Empty,
-                                    ImmutableDictionary<string, string>.Empty,
-                                    true
-                                );
-                            };
-                        }
-                        if (i.Contains('h'))
-                        { // header
-                            return c =>
-                                NewText(
-                                    null,
-                                    string.Join('\n', c),
-                                    new Dictionary<string, string> { { "role", "header" } }
-                                );
-                        }
-                        // contains("d") == default
-                        return c =>
+                        IDictionary<string, string> options = ImmutableDictionary<
+                            string,
+                            string
+                        >.Empty;
+                        if (i.Contains('<'))
                         {
-                            var content = DoParse(
-                                new Reader(c),
-                                line => true,
-                                resolver,
-                                currentAttributes,
-                                false
-                            );
-                            if (content.Count == 1)
+                            options = new Dictionary<string, string>
                             {
-                                return content[0];
-                            }
-                            return new Paragraph(
-                                content,
-                                ImmutableDictionary<string, string>.Empty
-                            );
-                        };
+                                { "role", "tableblock halign-left valign-top" }
+                            };
+                        }
+                        if (i.Contains('>'))
+                        {
+                            options = new Dictionary<string, string>
+                            {
+                                { "role", "tableblock halign-right valign-top" }
+                            };
+                        }
+                        if (i.Contains('^'))
+                        {
+                            options = new Dictionary<string, string>
+                            {
+                                { "role", "tableblock halign-center valign-top" }
+                            };
+                        }
+                        return ToTableCellFormatter(i, resolver, currentAttributes, options);
                     })
                     .ToList() ?? []
                 : [];
@@ -2282,6 +2219,81 @@ namespace NAsciidoc.Parser
                 rows.Add(cells);
             }
             return new Table(rows, options ?? ImmutableDictionary<string, string>.Empty);
+        }
+
+        private Func<IList<string>, IElement> ToTableCellFormatter(
+            string options,
+            IContentResolver? resolver,
+            IDictionary<string, string> currentAttributes,
+            IDictionary<string, string> style
+        )
+        {
+            if (options.Contains('a'))
+            { // asciidoc
+                return c =>
+                {
+                    var content = DoParse(
+                        new Reader(c),
+                        line => true,
+                        resolver,
+                        currentAttributes,
+                        true
+                    );
+                    if (content.Count == 1)
+                    {
+                        return content[0];
+                    }
+                    return new Paragraph(content, style);
+                };
+            }
+            if (options.Contains('e'))
+            { // emphasis
+                return c => new Text([Text.Styling.Emphasis], string.Join('\n', c), style);
+            }
+            if (options.Contains('s'))
+            { // strong
+                return c => new Text([Text.Styling.Bold], string.Join('\n', c), style);
+            }
+            if (options.Contains('l') || options.Contains('m'))
+            { // literal or monospace
+                return c =>
+                {
+                    var elements = string.Join(
+                        "",
+                        HandleIncludes(string.Join('\n', c), resolver, currentAttributes, true)
+                            .Select(e =>
+                                e is Text t ? t.Value : e.ToString() /* FIXME */
+                            )
+                    );
+                    return new Code(elements, ImmutableList<CallOut>.Empty, style, true);
+                };
+            }
+            if (options.Contains('h'))
+            { // header
+                var role = style.TryGetValue("role", out var v) ? v : "";
+                return c =>
+                    NewText(
+                        null,
+                        string.Join('\n', c),
+                        new Dictionary<string, string> { { "role", $"header {role}".TrimEnd() } }
+                    );
+            }
+            // contains("d") == default
+            return c =>
+            {
+                var content = DoParse(
+                    new Reader(c),
+                    line => true,
+                    resolver,
+                    currentAttributes,
+                    false
+                );
+                if (content.Count == 1)
+                {
+                    return content[0];
+                }
+                return new Paragraph(content, style);
+            };
         }
 
         private IList<IElement> DoParse(
