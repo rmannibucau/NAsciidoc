@@ -303,10 +303,7 @@ public partial record Canvas(
             }
 
             cur[0]++;
-            if (
-                IsVisited(cur[0], cur[1])
-                && (tagDef.Length == 0 || tagDef[^1] == '}')
-            )
+            if (IsVisited(cur[0], cur[1]) && (tagDef.Length == 0 || tagDef[^1] == '}'))
             {
                 break;
             }

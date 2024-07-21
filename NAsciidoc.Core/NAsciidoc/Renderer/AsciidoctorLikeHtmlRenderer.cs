@@ -1,5 +1,6 @@
 using System.Collections.Immutable;
 using System.Text;
+using NAsciidoc.Ascii2SVG;
 using NAsciidoc.Model;
 using NAsciidoc.Parser;
 
@@ -991,24 +992,64 @@ public class AsciidoctorLikeHtmlRenderer : Visitor<string>
     {
         switch (element.Options.TryGetValue("", out var type) ? type : "")
         {
-            /* todo
             case "a2s":
-                if (configuration.DataUriForAscii2Svg) {
-                    VisitImage(new Macro(
+                var svg = new Svg();
+                var tabWidth = element.Options.TryGetValue("tabWidth", out var tw)
+                    ? int.Parse(tw)
+                    : 8;
+                var scaleX = element.Options.TryGetValue("scaleX", out var sx) ? int.Parse(sx) : 9;
+                var scaleY = element.Options.TryGetValue("scaleY", out var sy) ? int.Parse(sy) : 16;
+                var blur = element.Options.TryGetValue("blur", out var b) && bool.Parse(b);
+                var font = element.Options.TryGetValue("font", out var f)
+                    ? f
+                    : "Consolas,Monaco,Anonymous Pro,Anonymous,Bitstream Sans Mono,monospace";
+                if (configuration.DataUriForAscii2Svg)
+                {
+                    VisitImage(
+                        new Macro(
                             "image",
-                            new DataUri(() => new MemoryStream(A2s.svg(element.value(), element..Options).getBytes(UTF_8)), "image/svg+xml").base64(),
-                            element.Options, false));
-                } else {
-                    if (element.Options.TryGetValue("role", out var clazz)) {
-                        builder.Append(" <div class=\"").Append(clazz.Replace('.', ' ').Trim()).Append("\">\n");
+                            new DataUri(
+                                () =>
+                                    new MemoryStream(
+                                        Encoding.UTF8.GetBytes(
+                                            svg.Convert(
+                                                element.Value,
+                                                tabWidth,
+                                                !blur,
+                                                font,
+                                                scaleX,
+                                                scaleY
+                                            )
+                                        )
+                                    ),
+                                "image/svg+xml"
+                            ).Base64,
+                            element.Options,
+                            false
+                        )
+                    );
+                }
+                else
+                {
+                    if (element.Options.TryGetValue("role", out var clazz))
+                    {
+                        builder
+                            .Append(" <div class=\"")
+                            .Append(clazz.Replace('.', ' ').Trim())
+                            .Append("\">\n");
                     }
-                    VisitPassthroughBlock(new PassthroughBlock(A2s.svg(element.value(), element..Options), Map.of()));
-                    if (clazz != null) {
+                    VisitPassthroughBlock(
+                        new PassthroughBlock(
+                            svg.Convert(element.Value, tabWidth, !blur, font, scaleX, scaleY),
+                            ImmutableDictionary<string, string>.Empty
+                        )
+                    );
+                    if (clazz != null)
+                    {
                         builder.Append(" </div>\n");
                     }
                 }
                 break;
-            */
             default:
                 VisitCode(new Code(element.Value, [], element.Options, false));
                 break;
@@ -1593,6 +1634,6 @@ public class AsciidoctorLikeHtmlRenderer : Visitor<string>
         public IDictionary<string, string> Attributes { get; init; } =
             ImmutableDictionary<string, string>.Empty;
 
-        // todo: public bool DataUriForAscii2Svg { get; init; } = true;
+        public bool DataUriForAscii2Svg { get; init; } = true;
     }
 }

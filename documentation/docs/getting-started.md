@@ -46,3 +46,27 @@ Console.WriteLine(html);
 > [!TIP]
 > The renderer is a `Visitor<x>` which basically goes thru the AST to create an output.
 > It is easy to implement to get another rendering and potentially something else than HTML (for example it can be used to render a document as a `Spectre.Console` output, a PDF, etc...).
+
+
+## Diagrams/Graphics
+
+By default the project is integrated with `NAsciidoc.Ascii2SVG` which is a dotnet port of [ascii2svg](https://github.com/asciitosvg/asciitosvg).
+It is usable in asciidoc blocks:
+
+[source,adoc]
+----
+= My Doc
+                            
+[a2s, format="svg"]
+....
+.-------------------------.
+|                         |
+| .---.-. .-----. .-----. |
+| | .-. | +-->  | |  <--| |
+| | '-' | |  <--| +-->  | |
+| '---'-' '-----' '-----' |
+|  ascii     2      svg   |
+|                         |
+'-------------------------'
+....
+----
