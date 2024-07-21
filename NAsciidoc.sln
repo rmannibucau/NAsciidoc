@@ -7,6 +7,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NAsciidoc.Core", "NAsciidoc
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NAsciidoc.Tests", "NAsciidoc.Tests\NAsciidoc.Tests.csproj", "{E664C482-A562-4129-B463-81DDAC227A0F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NAsciidoc.Ascii2SVG", "NAsciidoc.Ascii2SVG\NAsciidoc.Ascii2SVG.csproj", "{40300FB5-F67D-4C73-9B85-160A3A90F279}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NAsciidoc.Ascii2SVG.Tests", "NAsciidoc.Ascii2SVG.Tests\NAsciidoc.Ascii2SVG.Tests.csproj", "{2CD66613-7AB5-42DD-B191-D4AB5819E661}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -24,5 +28,13 @@ Global
 		{E664C482-A562-4129-B463-81DDAC227A0F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E664C482-A562-4129-B463-81DDAC227A0F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E664C482-A562-4129-B463-81DDAC227A0F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{40300FB5-F67D-4C73-9B85-160A3A90F279}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{40300FB5-F67D-4C73-9B85-160A3A90F279}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{40300FB5-F67D-4C73-9B85-160A3A90F279}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{40300FB5-F67D-4C73-9B85-160A3A90F279}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2CD66613-7AB5-42DD-B191-D4AB5819E661}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2CD66613-7AB5-42DD-B191-D4AB5819E661}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2CD66613-7AB5-42DD-B191-D4AB5819E661}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2CD66613-7AB5-42DD-B191-D4AB5819E661}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

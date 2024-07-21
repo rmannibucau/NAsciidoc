@@ -27,6 +27,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\NAsciidoc.Core\NAsciidoc.Core.csproj" />
+    <EmbeddedResource Include="resources\*.svg" />
+    <EmbeddedResource Include="resources\*.a2s" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\NAsciidoc.Ascii2SVG\NAsciidoc.Ascii2SVG.csproj" />
   </ItemGroup>
 </Project>

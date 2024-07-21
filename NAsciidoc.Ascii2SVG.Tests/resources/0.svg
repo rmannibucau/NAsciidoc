@@ -1,0 +1,35 @@
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="306px" height="112px" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+  <defs>
+    <filter id="dsFilter" width="150%" height="150%">
+      <feOffset result="offOut" in="SourceGraphic" dx="2" dy="2"/>
+      <feColorMatrix result="matrixOut" in="offOut" type="matrix" values="0.2 0 0 0 0 0 0.2 0 0 0 0 0 0.2 0 0 0 0 0 1 0"/>
+      <feGaussianBlur result="blurOut" in="matrixOut" stdDeviation="3"/>
+      <feBlend in="SourceGraphic" in2="blurOut" mode="normal"/>
+    </filter>
+    <marker id="iPointer"
+      viewBox="0 0 10 10" refX="5" refY="5"
+      markerUnits="strokeWidth"
+      markerWidth="8" markerHeight="15"
+      orient="auto">
+      <path d="M 10 0 L 10 10 L 0 5 z" />
+    </marker>
+    <marker id="Pointer"
+      viewBox="0 0 10 10" refX="5" refY="5"
+      markerUnits="strokeWidth"
+      markerWidth="8" markerHeight="15"
+      orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 z" />
+    </marker>
+  </defs>
+  <g id="closed" stroke="#000" stroke-width="2" fill="none">
+    <path id="closed0" fill="#aa4444" d="M 4.5 18 Q 4.5 8 14.5 8 L 13.5 8  L 22.5 8  L 31.5 8  L 40.5 8  L 49.5 8  L 58.5 8  L 67.5 8  L 76.5 8  L 85.5 8  L 94.5 8  L 103.5 8  L 112.5 8  L 121.5 8  L 120.5 8 Q 130.5 8 130.5 18  L 130.5 24  L 130.5 30 Q 130.5 40 120.5 40  L 121.5 40  L 112.5 40  L 103.5 40  L 94.5 40  L 85.5 40  L 76.5 40  L 67.5 40  L 58.5 40  L 49.5 40  L 40.5 40  L 31.5 40  L 22.5 40  L 13.5 40  L 14.5 40 Q 4.5 40 4.5 30  L 4.5 24 Z" />
+    <path id="closed1" fill="#ccccff" d="M 157.5 18 Q 157.5 8 167.5 8 L 166.5 8  L 175.5 8  L 184.5 8  L 193.5 8  L 202.5 8  L 211.5 8  L 220.5 8  L 229.5 8  L 238.5 8  L 247.5 8  L 256.5 8  L 265.5 8  L 274.5 8  L 283.5 8  L 282.5 8 Q 292.5 8 292.5 18  L 292.5 24  L 292.5 30 Q 292.5 40 282.5 40  L 283.5 40  L 274.5 40  L 265.5 40  L 256.5 40  L 247.5 40  L 238.5 40  L 229.5 40  L 220.5 40  L 211.5 40  L 202.5 40  L 193.5 40  L 184.5 40  L 175.5 40  L 166.5 40  L 167.5 40 Q 157.5 40 157.5 30  L 157.5 24 Z" />
+  </g>
+  <g id="lines" stroke="#000" stroke-width="2" fill="none">
+  </g>
+  <g id="text" stroke="none" style="font-family:monospace;font-size:15.2px" >
+    <text id="obj2" x="13.5" y="24" fill="#fff">[Red Box]</text>
+    <text id="obj3" x="166.5" y="24" fill="#000">[Blue Box]</text>
+  </g>
+</svg>
