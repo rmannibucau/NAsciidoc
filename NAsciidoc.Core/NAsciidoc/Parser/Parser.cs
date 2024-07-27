@@ -1161,6 +1161,12 @@ namespace NAsciidoc.Parser
                         )
                     )
                     {
+                        if (next.Trim() == "+")
+                        {
+                            buffer.Add("");
+                            continue;
+                        }
+
                         buffer.Add(next);
                         if (needed == next)
                         {

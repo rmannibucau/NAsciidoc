@@ -132,6 +132,8 @@ public class ParserTests
                     Where to generate the skeleton. Default: `hcms-frisby`.
                     hcms.database-init.enabled (env: `HCMS_DATABASE_INIT_ENABLED`)::
                     Should database be initialized at startup. Default: `true`.
+                    +
+                    multiline
                     """.Split("\n")
                 )
             )
@@ -213,20 +215,30 @@ public class ParserTests
                                 ),
                                 new Paragraph(
                                     [
-                                        new Text(
-                                            ImmutableList<Text.Styling>.Empty,
-                                            "Should database be initialized at startup. Default: ",
+                                        new Paragraph(
+                                            [
+                                                new Text(
+                                                    ImmutableList<Text.Styling>.Empty,
+                                                    "Should database be initialized at startup. Default: ",
+                                                    ImmutableDictionary<string, string>.Empty
+                                                ),
+                                                new Code(
+                                                    "true",
+                                                    ImmutableList<CallOut>.Empty,
+                                                    ImmutableDictionary<string, string>.Empty,
+                                                    true
+                                                ),
+                                                new Text(
+                                                    ImmutableList<Text.Styling>.Empty,
+                                                    ".",
+                                                    ImmutableDictionary<string, string>.Empty
+                                                )
+                                            ],
                                             ImmutableDictionary<string, string>.Empty
                                         ),
-                                        new Code(
-                                            "true",
-                                            ImmutableList<CallOut>.Empty,
-                                            ImmutableDictionary<string, string>.Empty,
-                                            true
-                                        ),
                                         new Text(
                                             ImmutableList<Text.Styling>.Empty,
-                                            ".",
+                                            "multiline",
                                             ImmutableDictionary<string, string>.Empty
                                         )
                                     ],
