@@ -7,7 +7,7 @@
         <EmitCompilerGeneratedFiles>false</EmitCompilerGeneratedFiles>
         <CompilerGeneratedFilesOutputPath>$(BaseIntermediateOutputPath)/Generated</CompilerGeneratedFilesOutputPath>
 
-        <VersionPrefix>0.0.2</VersionPrefix>
+        <VersionPrefix>0.0.3</VersionPrefix>
         <Authors>rmannibucau</Authors>
         <Company>rmannibucau</Company>
         <PackageReadmeFile>README.md</PackageReadmeFile>
