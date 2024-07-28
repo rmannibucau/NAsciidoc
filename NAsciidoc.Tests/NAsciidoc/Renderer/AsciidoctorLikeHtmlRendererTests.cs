@@ -59,6 +59,43 @@ public class AsciidoctorLikeHtmlRendererTests
     }
 
     [Fact]
+    public void DescriptionListWithNestedTextAndParagraphs()
+    {
+        AssertRenderingContent(
+            """
+            Location::
+            Site source base directory.
+            +
+            *Default value:* `.`.
+            +
+            *Environment variable:* `SBSHARP__INPUT__LOCATION`.
+            +
+            *Command line:* `--sbsharp:Input:Location=<value>`.
+            """,
+"""
+<dl>
+  <dt>Location</dt>
+  <dd>
+ <div class="paragraph">
+ <p>
+Site source base directory.
+ </p>
+ <div class="paragraph">
+<b>Default value:</b><code>.</code>. </div>
+ <div class="paragraph">
+ <p><b>Environment variable:</b><code>SBSHARP__INPUT__LOCATION</code>.</p>
+ </div>
+ <div class="paragraph">
+ <p><b>Command line:</b><code>--sbsharp:Input:Location=&lt;value&gt;</code>.</p>
+ </div>
+ </div>
+</dd>
+ </dl>
+"""
+        );
+    }
+
+    [Fact]
     public void PassthroughIncludeJson()
     {
         var json = "{\n  \"openapi\":\"3.0.1\"\n}\n";
@@ -903,7 +940,9 @@ public class AsciidoctorLikeHtmlRendererTests
         );
         var renderer = new AsciidoctorLikeHtmlRenderer();
         renderer.Visit(doc);
-        Assert.Equal(html.Trim(), renderer.Result().Trim());
+        var expected = html.Trim();
+        var actual = renderer.Result().Trim();
+        Assert.Equal(expected, actual);
     }
 
     private void AssertRenderingContent(string adoc, string html, string? work = null)

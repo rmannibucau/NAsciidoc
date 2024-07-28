@@ -666,7 +666,20 @@ public class AsciidoctorLikeHtmlRenderer : Visitor<string>
 
                 bool parentNeedsP =
                     state.lastElement.Count > 1
-                    && IsList(state.lastElement[state.lastElement.Count - 2].Type());
+                    && (
+                        IsList(state.lastElement[state.lastElement.Count - 2].Type())
+                        || ( // if parent is a paragraph and it has homogeneous chidlren, ensure texts are wrapped in <p>
+                            state.lastElement[^2] is Paragraph p
+                            && p.Children.Count > 1
+                            && p.Children.Any(it => it.Type() == IElement.ElementType.Paragraph)
+                            && p.Children.Any(it =>
+                                it.Type() == IElement.ElementType.Text
+                                || it.Type() == IElement.ElementType.Link
+                                || (it is Code c && c.Inline)
+                                || (it is Macro m && m.Inline)
+                            )
+                        )
+                    );
                 bool wrap =
                     useWrappers
                     && (
