@@ -4,8 +4,7 @@ set -e
 
 #
 # HYPOTHESIS:
-# - the nuget key is initialized (ciphered in ~/.config/NuGet/NuGet.Config):
-#   $ nuget setApiKey $key
+# - the nuget key is available in the environment as $NUGET_KEY
 # - git, grep, sed, bc and dotnet commands are available and functional
 #
 
@@ -35,7 +34,7 @@ for p in \
   "NAsciidoc.Core"
 do
     echo "[INFO] Publishing $p"
-    $wrapping_command dotnet nuget push "./$p/bin/Release/$p.$version.nupkg" --source https://api.nuget.org/v3/index.json
+    $wrapping_command dotnet nuget push "./$p/bin/Release/$p.$version.nupkg" --api-key "$NUGET_KEY" --symbol-api-key "$NUGET_KEY" --source https://api.nuget.org/v3/index.json
 done
 
 # move to next version
