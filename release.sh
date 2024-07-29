@@ -9,8 +9,8 @@ set -e
 # - git, grep, sed, bc and dotnet commands are available and functional
 #
 
-# enable to test the script
-wrapping_command=echo
+# enable to test the script - just set "echo"
+wrapping_command=
 
 # some configuration
 release_commit_prefix='[release] Tagging '
