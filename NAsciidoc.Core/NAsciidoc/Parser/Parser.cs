@@ -60,13 +60,27 @@ namespace NAsciidoc.Parser
 
         public Document Parse(Reader reader, ParserContext? context = null)
         {
-            return new Document(ParseHeader(reader), ParseBody(reader, context?.Resolver ?? null));
+            var header = ParseHeader(reader, context?.Resolver ?? null);
+            return new Document(
+                header,
+                ParseBody(reader, context?.Resolver ?? null, header.Attributes)
+            );
         }
 
-        public Body ParseBody(Reader reader, IContentResolver? resolver = null)
+        public Body ParseBody(
+            Reader reader,
+            IContentResolver? resolver = null,
+            IDictionary<string, string>? initialAttributes = null
+        )
         {
             return new Body(
-                DoParse(reader, line => true, resolver, new Dictionary<string, string>(), true)
+                DoParse(
+                    reader,
+                    line => true,
+                    resolver,
+                    new Dictionary<string, string>(initialAttributes??ImmutableDictionary<string, string>.Empty),
+                    true
+                )
             );
         }
 
@@ -2515,7 +2529,7 @@ namespace NAsciidoc.Parser
             return elements.Where(it => !(it is Paragraph p && p.Children.Count == 0)).ToList();
         }
 
-        private Header ParseHeader(Reader reader)
+        private Header ParseHeader(Reader reader, IContentResolver? resolver)
         {
             var firstLine = reader.SkipCommentsAndEmptyLines();
             if (firstLine is null)
@@ -2546,7 +2560,10 @@ namespace NAsciidoc.Parser
                 && CanBeHeaderLine(authorLine)
             )
             {
-                if (!AttributeDefinitionRegex().Match(authorLine).Success)
+                if (
+                    !authorLine.StartsWith("include:")
+                    && !AttributeDefinitionRegex().Match(authorLine).Success
+                )
                 { // author line
                     author = ParseAuthorLine(authorLine);
 
@@ -2558,7 +2575,10 @@ namespace NAsciidoc.Parser
                         && CanBeHeaderLine(revisionLine)
                     )
                     {
-                        if (!AttributeDefinitionRegex().Match(revisionLine).Success)
+                        if (
+                            !authorLine.StartsWith("include:")
+                            && !AttributeDefinitionRegex().Match(revisionLine).Success
+                        )
                         { // author line
                             revision = ParseRevisionLine(revisionLine);
                         }
@@ -2574,7 +2594,7 @@ namespace NAsciidoc.Parser
                 }
             }
 
-            var attributes = ReadAttributes(reader);
+            var attributes = ReadAttributes(reader, resolver);
             return new Header(title, author, revision, attributes);
         }
 
@@ -2661,7 +2681,10 @@ namespace NAsciidoc.Parser
             return buffer;
         }
 
-        private IDictionary<string, string> ReadAttributes(Reader reader)
+        private IDictionary<string, string> ReadAttributes(
+            Reader reader,
+            IContentResolver? resolver
+        )
         {
             var attributes = new SortedDictionary<string, string>();
             string? line;
@@ -2684,10 +2707,32 @@ namespace NAsciidoc.Parser
                     }
                     attributes.Add(matcher.Groups["name"].Value, value);
                 }
-                else if (attributes.Count == 0)
+                else if (line.StartsWith("include::") && line.TrimEnd().EndsWith(']'))
                 {
-                    reader.Rewind();
-                    break;
+                    var optsStart = line.LastIndexOf('[');
+                    var text = DoInclude(
+                        new Macro(
+                            "include",
+                            EarlyAttributeReplacement(
+                                line["include::".Length..optsStart],
+                                ImmutableDictionary<string, string>.Empty
+                            ),
+                            ParseOptions(line[(optsStart + 1)..line.LastIndexOf(']')]),
+                            false
+                        ),
+                        resolver,
+                        attributes,
+                        false
+                    );
+                    if (text.Count == 1 && text[0] is Text t)
+                    {
+                        foreach (
+                            var it in ReadAttributes(new Reader(t.Value.Split('\n')), resolver)
+                        )
+                        {
+                            attributes[it.Key] = it.Value;
+                        }
+                    }
                 }
                 else
                 {
@@ -2734,6 +2779,12 @@ namespace NAsciidoc.Parser
                                 continue;
                             }
                         }
+                    }
+
+                    if (attributes.Count == 0) // direct content (weird but accepted)
+                    {
+                        reader.Rewind();
+                        break;
                     }
 
                     // missing empty line separator

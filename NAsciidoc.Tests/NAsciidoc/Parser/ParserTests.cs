@@ -2056,7 +2056,7 @@ public class ParserTests
     [Fact]
     public void IncludeAttributes()
     {
-        var body = new Parser().ParseBody(
+        var doc = new Parser().Parse(
             new Reader(
                 """
                 = My title
@@ -2065,36 +2065,59 @@ public class ParserTests
                 {url}[Yupiik]
                 """.Split('\n')
             ),
-            new CustomContentResolver(
-                (reference, encoding) =>
-                    reference switch
-                    {
-                        "attributes.adoc" => [":url: https://yupiik.io"],
-                        _ => null
-                    }
+            new ParserContext(
+                new CustomContentResolver(
+                    (reference, encoding) =>
+                        reference switch
+                        {
+                            "attributes.adoc" => [":url: https://yupiik.io"],
+                            _ => null
+                        }
+                )
             )
         );
         Assert.Equivalent(
             new List<IElement>
             {
-                new Section(
-                    1,
-                    new Text(
-                        ImmutableList<Text.Styling>.Empty,
-                        "My title",
-                        ImmutableDictionary<string, string>.Empty
-                    ),
-                    [
-                        new Link(
-                            "https://yupiik.io",
-                            "Yupiik",
-                            ImmutableDictionary<string, string>.Empty
-                        )
-                    ],
-                    ImmutableDictionary<string, string>.Empty
-                )
+                new Link("https://yupiik.io", "Yupiik", ImmutableDictionary<string, string>.Empty)
             },
-            body.Children
+            doc.Body.Children
+        );
+    }
+
+    [Fact]
+    public void IncludeAttributesAndInlineAttributes()
+    {
+        var doc = new Parser().Parse(
+            new Reader(
+                """
+                = My title
+                :pre: yes
+                include::attributes.adoc[]
+                :post: true
+                                
+                {url}[github]
+                """.Split('\n')
+            ),
+            new ParserContext(
+                new CustomContentResolver(
+                    (reference, encoding) =>
+                        reference switch
+                        {
+                            "attributes.adoc" => [":url: https://rmannibucau.github.io"],
+                            _ => null
+                        }
+                )
+            )
+        );
+        Assert.Equivalent(
+            new Dictionary<string, string>
+            {
+                { "pre", "yes" },
+                { "url", "https://rmannibucau.github.io" },
+                { "post", "true" }
+            },
+            doc.Header.Attributes
         );
     }
 
