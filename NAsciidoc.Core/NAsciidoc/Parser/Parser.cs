@@ -138,7 +138,8 @@ namespace NAsciidoc.Parser
         private IDictionary<string, string> DoParseOptions(
             string options,
             string defaultKey,
-            bool nestedOptsSupport
+            bool nestedOptsSupport,
+            params string[] orderedKeyFallbacks
         )
         {
             var map = new Dictionary<string, string>();
@@ -146,9 +147,12 @@ namespace NAsciidoc.Parser
             var value = new StringBuilder();
             bool quoted = false;
             bool inKey = true;
-            for (int i = 0; i < options.Length; i++)
+            for (int i = 0; i <= options.Length; i++)
             {
-                char c = options[i];
+                char c =
+                    i == options.Length
+                        ? ',' /* force flush */
+                        : options[i];
                 if (c == '"')
                 {
                     quoted = !quoted;
@@ -165,6 +169,20 @@ namespace NAsciidoc.Parser
                 {
                     if (key.Length > 0)
                     {
+                        if (
+                            // if we have a "value" but no key and a fallback key, force it
+                            value.Length == 0
+                            && map.Count < orderedKeyFallbacks.Length
+                            // ignore the "known" shortcuts
+                            && key[0] != '.'
+                            && key[0] != '%'
+                            && key[0] != '#'
+                        )
+                        {
+                            value.Append(key);
+                            key.Length = 0;
+                            key.Append(orderedKeyFallbacks[map.Count]);
+                        }
                         FlushOption(defaultKey, key, value, map);
                     }
                     key.Length = 0;
@@ -175,10 +193,6 @@ namespace NAsciidoc.Parser
                 {
                     (inKey ? key : value).Append(c);
                 }
-            }
-            if (key.Length > 0)
-            {
-                FlushOption(defaultKey, key, value, map);
             }
             if (nestedOptsSupport)
             {
@@ -231,8 +245,12 @@ namespace NAsciidoc.Parser
             return null;
         }
 
-        private IDictionary<string, string> ParseOptions(string options)
+        private IDictionary<string, string> ParseOptions(string options, string? macroType = null)
         {
+            if (macroType == "image")
+            {
+                return DoParseOptions(options, "", true, "alt", "width", "height");
+            }
             return MapIf("source", null, "language", options)
                 ?? MapIf("example", "exampleblock", "", options)
                 ?? MapIf("verse", "verseblock", "", options)
@@ -1518,7 +1536,6 @@ namespace NAsciidoc.Parser
                             if (backward >= 0 && backward < i)
                             { // start by assuming it a link then fallback on a macro
                                 var optionsPrefix = line[backward..i];
-                                var options = ParseOptions(line[(i + 1)..end].Trim());
                                 if (start < backward)
                                 {
                                     FlushText(elements, line[start..backward]);
@@ -1531,6 +1548,7 @@ namespace NAsciidoc.Parser
                                         optionsPrefix.Length <= macroMarker + 1
                                         || optionsPrefix[macroMarker + 1] != ':';
                                     var type = optionsPrefix[0..macroMarker];
+                                    var options = ParseOptions(line[(i + 1)..end].Trim(), type);
                                     var label =
                                         "stem" == type
                                             ? line[(i + 1)..end]
@@ -1636,6 +1654,7 @@ namespace NAsciidoc.Parser
                                 }
                                 else
                                 {
+                                    var options = ParseOptions(line[(i + 1)..end].Trim());
                                     elements.Add(
                                         new Link(
                                             optionsPrefix,

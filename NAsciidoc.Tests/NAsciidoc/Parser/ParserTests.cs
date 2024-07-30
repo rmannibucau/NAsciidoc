@@ -1858,7 +1858,7 @@ public class ParserTests
                 new Macro(
                     "image",
                     "test.png",
-                    new Dictionary<string, string> { { "", "Test" } },
+                    new Dictionary<string, string> { { "alt", "Test" } },
                     true
                 ),
                 new Paragraph(
@@ -1871,7 +1871,7 @@ public class ParserTests
                         new Macro(
                             "image",
                             "foo.svg",
-                            new Dictionary<string, string> { { "", "Bar" } },
+                            new Dictionary<string, string> { { "alt", "Bar" } },
                             true
                         ),
                         new Text(
@@ -1885,7 +1885,7 @@ public class ParserTests
                 new Macro(
                     "image",
                     "as-a-block.jpg",
-                    new Dictionary<string, string> { { "", "Foo" }, { "width", "100%" } },
+                    new Dictionary<string, string> { { "alt", "Foo" }, { "width", "100%" } },
                     false
                 )
             },

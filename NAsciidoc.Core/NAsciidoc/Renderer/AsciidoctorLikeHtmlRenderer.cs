@@ -1106,10 +1106,10 @@ public class AsciidoctorLikeHtmlRenderer : Visitor<string>
                 new Macro(
                     element.Name,
                     resolver!.Apply(element.Label).Base64,
-                    !element.Options.ContainsKey("")
+                    !element.Options.ContainsKey("alt")
                         ? element
                             .Options.Concat(
-                                new Dictionary<string, string> { { "", element.Label } }
+                                new Dictionary<string, string> { { "alt", element.Label } }
                             )
                             .ToImmutableDictionary()
                         : element.Options,
@@ -1124,11 +1124,19 @@ public class AsciidoctorLikeHtmlRenderer : Visitor<string>
             .Append(element.Label)
             .Append("\" alt=\"")
             .Append(
-                element.Options.TryGetValue("", out var t)
-                    ? t
-                    : (element.Options.TryGetValue("alt", out var alt) ? alt : element.Label)
+                element.Options.TryGetValue("alt", out var alt)
+                    ? alt
+                    : (element.Options.TryGetValue("", out var f) ? f : element.Label)
             )
             .Append('"');
+        if (element.Options.TryGetValue("width", out var w))
+        {
+            builder.Append(" width=\"").Append(w).Append('"');
+        }
+        if (element.Options.TryGetValue("height", out var h))
+        {
+            builder.Append(" height=\"").Append(h).Append('"');
+        }
         WriteCommonAttributes(element.Options, null);
         builder.Append(">\n");
     }

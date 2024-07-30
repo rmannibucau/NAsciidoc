@@ -72,7 +72,7 @@ public class AsciidoctorLikeHtmlRendererTests
             +
             *Command line:* `--sbsharp:Input:Location=<value>`.
             """,
-"""
+            """
 <dl>
   <dt>Location</dt>
   <dd>
@@ -755,6 +755,49 @@ Site source base directory.
              </div>
             """.Replace("$base64", base64).Trim(),
             renderer.Result().Trim()
+        );
+    }
+
+    [Fact]
+    public void ImageSize()
+    {
+        AssertRenderingContent(
+            """
+            = Test
+                            
+            image::img.png[logo,width="10px",height=12px]
+            """,
+            """
+<div class="sect0" id="_test">
+  <h1>Test</h1>
+ <div class="sectionbody">
+ <div class="imageblock">
+ <div class="content">
+ <img src="img.png" alt="logo" width="10px" height="12px">
+ </div>
+ </div>
+ </div>
+ </div>
+"""
+        );
+        AssertRenderingContent(
+            """
+            = Test
+                            
+            image::img.png[logo,10,12]
+            """,
+            """
+<div class="sect0" id="_test">
+  <h1>Test</h1>
+ <div class="sectionbody">
+ <div class="imageblock">
+ <div class="content">
+ <img src="img.png" alt="logo" width="10" height="12">
+ </div>
+ </div>
+ </div>
+ </div>
+"""
         );
     }
 
