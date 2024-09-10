@@ -25,6 +25,6 @@ public class SvgTests
         using var reader = new StreamReader(
             stream ?? throw new ArgumentException($"No resource {path}", nameof(path))
         );
-        return reader.ReadToEnd();
+        return reader.ReadToEnd().Replace("\r\n", "\n");
     }
 }

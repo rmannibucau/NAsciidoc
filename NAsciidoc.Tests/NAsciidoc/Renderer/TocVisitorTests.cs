@@ -95,7 +95,7 @@ public class TocVisitorTests
              </li>
              </ul>
 
-            """,
+            """.Replace("\r\n", "\n"),
             tocVisitor.Result().ToString()
         );
     }

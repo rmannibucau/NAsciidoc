@@ -234,7 +234,7 @@ public class AsciidoctorLikeHtmlRenderer : Visitor<string>
                     })
                     </script>
                     <script src="//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/MathJax.js?config=TeX-MML-AM_HTMLorMML"></script>
-                    """
+                    """.Replace("\r\n", "\n")
                 );
             }
 
@@ -270,7 +270,7 @@ public class AsciidoctorLikeHtmlRenderer : Visitor<string>
                      <tr>
                       <td class="icon">
 
-                """
+                """.Replace("\r\n", "\n")
             )
             .Append("     <div class=\"title\">")
             .Append(name.ToUpperInvariant())

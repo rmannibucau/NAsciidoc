@@ -726,7 +726,7 @@ Site source base directory.
                 = Test
                                 
                 image::img.png[logo]
-                """.Replace("img.png", tmp).Split("\n")
+                """.Replace("\r\n", "\n").Replace("img.png", tmp).Split("\n")
             )
         );
         var renderer = new AsciidoctorLikeHtmlRenderer(
@@ -753,7 +753,7 @@ Site source base directory.
              </div>
              </div>
              </div>
-            """.Replace("$base64", base64).Trim(),
+            """.Replace("\r\n", "\n").Replace("$base64", base64).Trim(),
             renderer.Result().Trim()
         );
     }
@@ -810,7 +810,7 @@ Site source base directory.
                 = Test
                                 
                 image::img.png[logo,.center.w80]
-                """.Split('\n')
+                """.Replace("\r\n", "\n").Split('\n')
             )
         );
         var renderer = new AsciidoctorLikeHtmlRenderer(
@@ -832,7 +832,7 @@ Site source base directory.
              </div>
              </div>
              </div>
-            """.Trim(),
+            """.Replace("\r\n", "\n").Trim(),
             renderer.Result().Trim()
         );
     }
@@ -846,7 +846,7 @@ Site source base directory.
                 = Test
                                 
                 * image:Apache_Feather_Logo.png[romain_asf,role="w32"] link:https://home.apache.org/committer-index.html#rmannibucau[ASF Member]
-                """.Split("\n")
+                """.Replace("\r\n", "\n").Split('\n')
             )
         );
         var renderer = new AsciidoctorLikeHtmlRenderer(
@@ -874,7 +874,7 @@ Site source base directory.
              </div>
              </div>
              </div>
-            """.Trim(),
+            """.Replace("\r\n", "\n").Trim(),
             renderer.Result().Trim()
         );
     }
@@ -940,6 +940,34 @@ Site source base directory.
     }
 
     [Fact]
+    public void LinkInlineAfterColon()
+    {
+        AssertRenderingContent(
+            "Link: link:https://github.com/rmannibucau/NAsciidoc/blob/123456789/src/test/Foo.cs[Foo.cs,window=_blank].",
+            """
+            <div class="paragraph">
+             <p>Link:  <a href="https://github.com/rmannibucau/NAsciidoc/blob/123456789/src/test/Foo.cs" target="_blank" rel="noopener">Foo.cs</a>
+            .</p>
+             </div>
+            """
+        );
+    }
+
+    [Fact]
+    public void LinkWithBlankWindowShortCut()
+    {
+        AssertRenderingContent(
+            "Link: link:https://bla[BLA^].",
+            """
+            <div class="paragraph">
+             <p>Link:  <a href="https://bla" target="_blank" rel="noopener">BLA</a>
+            .</p>
+             </div>
+            """
+        );
+    }
+
+    [Fact]
     public void Callouts()
     {
         AssertRenderingContent(
@@ -978,20 +1006,20 @@ Site source base directory.
     private void AssertRendering(string adoc, string html)
     {
         var doc = new Parser.Parser().Parse(
-            adoc,
+            adoc.Replace("\r\n", "\n"),
             new ParserContext(new LocalContentResolver("target/missing"))
         );
         var renderer = new AsciidoctorLikeHtmlRenderer();
         renderer.Visit(doc);
-        var expected = html.Trim();
-        var actual = renderer.Result().Trim();
+        var expected = html.Trim().Replace("\r\n", "\n");
+        var actual = renderer.Result().Trim().Replace("\r\n", "\n");
         Assert.Equal(expected, actual);
     }
 
     private void AssertRenderingContent(string adoc, string html, string? work = null)
     {
         var doc = new Parser.Parser().ParseBody(
-            new Reader(adoc.Split('\n')),
+            new Reader(adoc.Replace("\r\n", "\n").Split('\n')),
             new LocalContentResolver(work ?? "target/missing")
         );
         var renderer = new AsciidoctorLikeHtmlRenderer(
@@ -1001,8 +1029,8 @@ Site source base directory.
             }
         );
         renderer.VisitBody(doc);
-        var expected = html.Trim();
-        var actual = renderer.Result().Trim();
+        var expected = html.Trim().Replace("\r\n", "\n");
+        var actual = renderer.Result().Trim().Replace("\r\n", "\n");
         Assert.Equal(expected, actual);
     }
 }

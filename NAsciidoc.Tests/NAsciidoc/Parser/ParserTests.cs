@@ -37,7 +37,7 @@ public class ParserTests
             :tip-caption: :bulb:
             :warning-caption: :warning:
             endif::[]
-            """;
+            """.Replace("\r\n", "\n");
         {
             var header = new Parser().Parse(content, null).Header;
             Assert.Equal("Title", header.Title);
@@ -134,7 +134,7 @@ public class ParserTests
                     Should database be initialized at startup. Default: `true`.
                     +
                     multiline
-                    """.Split("\n")
+                    """.Replace("\r\n", "\n").Split("\n")
                 )
             )
             .Body;
@@ -289,7 +289,7 @@ public class ParserTests
                     We need [.line-through]#ten# twenty VMs.
                                     
                     A [.myrole]#custom role# must be fulfilled by the theme.
-                    """.Split("\n")
+                    """.Replace("\r\n", "\n").Split("\n")
                 ),
                 null
             )
@@ -420,7 +420,7 @@ public class ParserTests
                     Where did all the [.underline]#cores# go?
                                     
                     end.
-                    """.Split('\n')
+                    """.Replace("\r\n", "\n").Split('\n')
                 ),
                 null
             )
@@ -503,7 +503,7 @@ public class ParserTests
                     https://yupiik.io[Yupiik OSS,role=external,window=_blank]
                                     
                     This can be in a sentence about https://yupiik.io[Yupiik OSS].
-                    """.Split('\n')
+                    """.Replace("\r\n", "\n").Split('\n')
                 ),
                 null
             )
@@ -674,7 +674,7 @@ public class ParserTests
                     == Section #2
                                     
                     Something key.
-                    """.Split('\n')
+                    """.Replace("\r\n", "\n").Split('\n')
                 ),
                 null
             )
@@ -763,7 +763,7 @@ public class ParserTests
                                 
                 [.center]
                 Something key.
-                """.Split('\n')
+                """.Replace("\r\n", "\n").Split('\n')
             ),
             null
         );
@@ -880,7 +880,7 @@ public class ParserTests
                 === Nested section
                                 
                 Something key.
-                """.Split('\n')
+                """.Replace("\r\n", "\n").Split('\n')
             ),
             null
         );
@@ -970,7 +970,7 @@ public class ParserTests
                 === Even without content
                                 
                 yes
-                """.Split('\n')
+                """.Replace("\r\n", "\n").Split('\n')
             ),
             null
         );
@@ -1078,7 +1078,7 @@ public class ParserTests
                 public record Foo() {
                 }
                 ----
-                """.Split('\n')
+                """.Replace("\r\n", "\n").Split('\n')
             ),
             null
         );
@@ -1106,7 +1106,7 @@ public class ParserTests
                 ++++
                 <script defer src="/js/test.js?v={foo-version}"></script>
                 ++++
-                """.Split('\n')
+                """.Replace("\r\n", "\n").Split('\n')
             ),
             null
         );
@@ -1132,7 +1132,7 @@ public class ParserTests
                 ----
                 <script defer src="/js/test.js?v={foo-version}"></script>
                 ----
-                """.Split('\n')
+                """.Replace("\r\n", "\n").Split('\n')
             ),
             null
         );
@@ -1174,7 +1174,7 @@ public class ParserTests
                 ----
                 +
                 * end
-                """.Split('\n')
+                """.Replace("\r\n", "\n").Split('\n')
             ),
             null
         );
@@ -1249,7 +1249,7 @@ public class ParserTests
                                 
                 <1> Defines a record,
                 <.> Defines an attribute of the record.
-                """.Split('\n')
+                """.Replace("\r\n", "\n").Split('\n')
             ),
             null
         );
@@ -1263,7 +1263,7 @@ public class ParserTests
                       String name (2)
                     ) {
                     }
-                    """,
+                    """.Replace("\r\n", "\n"),
                     [
                         new CallOut(
                             1,
@@ -1298,7 +1298,7 @@ public class ParserTests
                 """
                 * item 1
                 * item 2
-                """.Split('\n')
+                """.Replace("\r\n", "\n").Split('\n')
             ),
             null
         );
@@ -1336,7 +1336,7 @@ public class ParserTests
                 ** Parameters:
                   *** --resolve-provider: ...
                   *** --resolve-relaxed: ...
-                """.Split('\n')
+                """.Replace("\r\n", "\n").Split('\n')
             ),
             null
         );
@@ -1407,7 +1407,7 @@ public class ParserTests
                 """
                 . item 1
                 2. item 2
-                """.Split('\n')
+                """.Replace("\r\n", "\n").Split('\n')
             ),
             null
         );
@@ -1449,7 +1449,7 @@ public class ParserTests
                 +
                 2. item 2
                 +
-                """.Split('\n')
+                """.Replace("\r\n", "\n").Split('\n')
             ),
             null
         );
@@ -1498,7 +1498,7 @@ public class ParserTests
                 .. item 1 2
                 2. item 2
                 .. item 2 1
-                """.Split('\n')
+                """.Replace("\r\n", "\n").Split('\n')
             ),
             null
         );
@@ -1572,7 +1572,7 @@ public class ParserTests
                 ** item 1 2
                 * item 2
                 ** item 2 1
-                """.Split('\n')
+                """.Replace("\r\n", "\n").Split('\n')
             ),
             null
         );
@@ -1643,7 +1643,7 @@ public class ParserTests
                 . item 1
                 with continuation
                 2. item 2
-                """.Split('\n')
+                """.Replace("\r\n", "\n").Split('\n')
             ),
             null
         );
@@ -1679,7 +1679,7 @@ public class ParserTests
                 .Foo
                 * item 1
                 * item 2
-                """.Split('\n')
+                """.Replace("\r\n", "\n").Split('\n')
             ),
             null
         );
@@ -1715,7 +1715,7 @@ public class ParserTests
                 CPU:: The brain of the computer.
                 Hard drive:: Permanent storage for operating system and/or user files.
                 RAM:: Temporarily stores information the CPU uses during operation.
-                """.Split('\n')
+                """.Replace("\r\n", "\n").Split('\n')
             ),
             null
         );
@@ -1765,7 +1765,7 @@ public class ParserTests
                 * Bread
                 Produce::
                 * Bananas
-                """.Split('\n')
+                """.Replace("\r\n", "\n").Split('\n')
             ),
             null
         );
@@ -1848,7 +1848,7 @@ public class ParserTests
                                 
                 image::as-a-block.jpg[Foo,width="100%"]
                                 
-                """.Split('\n')
+                """.Replace("\r\n", "\n").Split('\n')
             ),
             null
         );
@@ -1901,7 +1901,7 @@ public class ParserTests
                 """
                 WARNING: Wolpertingers are known to nest in server racks.
                 Enter at your own risk.
-                """.Split('\n')
+                """.Replace("\r\n", "\n").Split('\n')
             ),
             null
         );
@@ -1928,7 +1928,7 @@ public class ParserTests
             new Reader(
                 """
                 The section <<anchors>> describes how automatic anchors work.
-                """.Split('\n')
+                """.Replace("\r\n", "\n").Split('\n')
             ),
             null
         );
@@ -1965,7 +1965,7 @@ public class ParserTests
                 == Create a configuration model [[configuration_model]]
                                 
                 A configuration model is a record marked with RootConfiguration.
-                """.Split('\n')
+                """.Replace("\r\n", "\n").Split('\n')
             ),
             null
         );
@@ -2005,7 +2005,7 @@ public class ParserTests
                                 
                 include::bar.adoc[lines=2..3]
                                 
-                """.Split('\n')
+                """.Replace("\r\n", "\n").Split('\n')
             ),
             new CustomContentResolver(
                 (reference, encoding) =>
@@ -2063,7 +2063,7 @@ public class ParserTests
                 include::attributes.adoc[]
                                 
                 {url}[Yupiik]
-                """.Split('\n')
+                """.Replace("\r\n", "\n").Split('\n')
             ),
             new ParserContext(
                 new CustomContentResolver(
@@ -2097,7 +2097,7 @@ public class ParserTests
                 :post: true
                                 
                 {url}[github]
-                """.Split('\n')
+                """.Replace("\r\n", "\n").Split('\n')
             ),
             new ParserContext(
                 new CustomContentResolver(
@@ -2138,7 +2138,7 @@ public class ParserTests
                 |Cell in column 1, row 3
                 |Cell in column 2, row 3
                 |===                    
-                """.Split('\n')
+                """.Replace("\r\n", "\n").Split('\n')
             ),
             null
         );
@@ -2201,7 +2201,7 @@ public class ParserTests
                 |===
                 |c1
                 |===
-                """.Split('\n')
+                """.Replace("\r\n", "\n").Split('\n')
             ),
             null
         );
@@ -2244,7 +2244,7 @@ public class ParserTests
                 |Cell in column 1, row 2
                 |Cell in column 2, row 2
                 |===                    
-                """.Split('\n')
+                """.Replace("\r\n", "\n").Split('\n')
             ),
             null
         );
@@ -2308,7 +2308,7 @@ public class ParserTests
                 |Cell in column 1, row 2|Cell in column 2, row 2
                 |Cell in column 1, row 3|Cell in column 2, row 3
                 |===
-                """.Split('\n')
+                """.Replace("\r\n", "\n").Split('\n')
             ),
             null
         );
@@ -2368,7 +2368,7 @@ public class ParserTests
             new Reader(
                 """
                 > Somebody said it.
-                """.Split('\n')
+                """.Replace("\r\n", "\n").Split('\n')
             ),
             null
         );
@@ -2404,7 +2404,7 @@ public class ParserTests
                                         
                 Dennis: Oh, what a giveaway! Did you hear that? Did you hear that, eh? That's what I'm on about! Did you see him repressing me? You saw him, Didn't you?
                 ____
-                """.Split('\n')
+                """.Replace("\r\n", "\n").Split('\n')
             ),
             null
         );
@@ -2459,7 +2459,7 @@ public class ParserTests
                 > > Is there more?
                 >
                 > Yep. AsciiDoc and Markdown share a lot of common syntax already.
-                """.Split('\n')
+                """.Replace("\r\n", "\n").Split('\n')
             ),
             null
         );
@@ -2549,7 +2549,7 @@ public class ParserTests
                                         
                 It is used to present information related to the main content.
                 --
-                """.Split('\n')
+                """.Replace("\r\n", "\n").Split('\n')
             ),
             null
         );
@@ -2589,7 +2589,7 @@ public class ParserTests
                 ifdef::foo[]
                 This is value.
                 endif::[]
-                """.Split('\n')
+                """.Replace("\r\n", "\n").Split('\n')
             ),
             null
         );
@@ -2621,7 +2621,7 @@ public class ParserTests
                 ifndef::foo[]
                 This is value.
                 endif::[]
-                """.Split('\n')
+                """.Replace("\r\n", "\n").Split('\n')
             ),
             null
         );
@@ -2653,7 +2653,7 @@ public class ParserTests
                 ++++
                 This is value.
                 ++++
-                """.Split('\n')
+                """.Replace("\r\n", "\n").Split('\n')
             ),
             null
         );
@@ -2744,7 +2744,7 @@ public class ParserTests
                     ----
                     include::{partialsdir}/content.properties[]
                     ----
-                    """.Replace("content.properties", Path.GetFileName(tmpFile)).Split('\n')
+                    """.Replace("\r\n", "\n").Replace("content.properties", Path.GetFileName(tmpFile)).Split('\n')
                 ),
                 new LocalContentResolver(work)
             );

@@ -261,15 +261,27 @@ namespace NAsciidoc.Parser
 
         private IDictionary<string, string> ParseOptions(string options, string? macroType = null)
         {
+            var result = ByTypeParseOption(options, macroType);
+            if ("link" == macroType && result.TryGetValue("", out var label) && label.EndsWith('^'))
+            {
+                result[""] = result[""][..^1];
+                result.TryAdd("window", "_blank");
+            }
+            return result;
+        }
+
+        private IDictionary<string, string> ByTypeParseOption(string options, string? macroType)
+        {
             if (macroType == "image")
             {
                 return DoParseOptions(options, "", true, "alt", "width", "height");
             }
+
             return MapIf("source", null, "language", options)
-                ?? MapIf("example", "exampleblock", "", options)
-                ?? MapIf("verse", "verseblock", "", options)
-                ?? MapIf("quote", "quoteblock", "attribution", options)
-                ?? DoParseOptions(options, "", true);
+                   ?? MapIf("example", "exampleblock", "", options)
+                   ?? MapIf("verse", "verseblock", "", options)
+                   ?? MapIf("quote", "quoteblock", "attribution", options)
+                   ?? DoParseOptions(options, "", true);
         }
 
         private string? Subs(string? value, IDictionary<string, string> opts)
@@ -1508,7 +1520,7 @@ namespace NAsciidoc.Parser
                     case '[':
                     {
                         inMacro = false; // we'll parse it so all good, no more need to escape anything
-                        int end = line.IndexOf(']', i + 1);
+                        var end = line.IndexOf(']', i + 1);
                         while (end > 0)
                         {
                             if (line[end - 1] != '\\')
@@ -1529,22 +1541,35 @@ namespace NAsciidoc.Parser
                             var subLine = line[start..].Trim();
                             var canBeLink = IsLink(subLine) || subLine.StartsWith("link:");
 
-                            int backward;
-                            int previousSemicolon = line.LastIndexOf(':', i);
+                            var backward = -1;
+                            var previousSemicolon = line.LastIndexOf(':', i);
                             if (previousSemicolon > 0 || canBeLink)
                             {
-                                int antepenultimateSemicolon = line.IndexOf(':', start);
-                                backward =
-                                    line.LastIndexOf(
-                                        ' ',
-                                        antepenultimateSemicolon > 0
-                                            ? antepenultimateSemicolon
-                                            : previousSemicolon
-                                    ) + 1;
-                            }
-                            else
-                            {
-                                backward = -1;
+                                if (line[previousSemicolon..Math.Min(previousSemicolon + "://".Length, end)] == "://")
+                                {
+                                    // likely a link
+                                    var previousSpace = line.LastIndexOf(' ', previousSemicolon);
+                                    if (previousSpace >= 0)
+                                    {
+                                        var link = line[(previousSpace + 1)..(end+1)];
+                                        if (IsLink(link) || link.StartsWith("link:"))
+                                        {
+                                            backward = previousSpace + 1;
+                                        }
+                                    }
+                                }
+
+                                if (backward < 0)
+                                {
+                                    var antepenultimateSemicolon = line.IndexOf(':', start);
+                                    backward =
+                                        line.LastIndexOf(
+                                            ' ',
+                                            antepenultimateSemicolon > 0
+                                                ? antepenultimateSemicolon
+                                                : previousSemicolon
+                                        ) + 1;
+                                }
                             }
 
                             if (backward >= 0 && backward < i)
@@ -1555,10 +1580,10 @@ namespace NAsciidoc.Parser
                                     FlushText(elements, line[start..backward]);
                                 }
 
-                                int macroMarker = optionsPrefix.IndexOf(":");
+                                var macroMarker = optionsPrefix.IndexOf(':', StringComparison.Ordinal);
                                 if (macroMarker > 0 && !IsLink(optionsPrefix))
                                 {
-                                    bool inlined =
+                                    var inlined =
                                         optionsPrefix.Length <= macroMarker + 1
                                         || optionsPrefix[macroMarker + 1] != ':';
                                     var type = optionsPrefix[0..macroMarker];
