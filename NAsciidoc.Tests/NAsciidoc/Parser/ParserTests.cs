@@ -17,6 +17,37 @@ public class ParserTests
             header.Attributes
         );
     }
+    
+    [Fact] // check for https://github.com/yupiik/tools-maven-plugin/issues/21
+    public void ParseIndentedCode()
+    {
+        var body = new Parser().ParseBody(
+            new Reader(
+                // intentation is intended
+                """
+                        [source,xml]
+                        ----
+                        <dependency>
+                            <groupId>io.quarkiverse.qute.web</groupId>
+                            <artifactId>quarkus-qute-web</artifactId>
+                        </dependency>
+                        ----
+                    """.Split('\n')
+            )
+        );
+        Assert.Equivalent(
+            new List<IElement>
+            {
+                new Code(
+                    "    <dependency>\n        <groupId>io.quarkiverse.qute.web</groupId>\n        <artifactId>quarkus-qute-web</artifactId>\n    </dependency>\n",
+                    ImmutableList<CallOut>.Empty,
+                    ImmutableDictionary<string, string>.Empty,
+                    false
+                ),
+            },
+            body.Children
+        );
+    }
 
     [Fact]
     public void ParseHeaderWithConditionalBlocks()

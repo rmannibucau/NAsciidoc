@@ -2025,7 +2025,7 @@ namespace NAsciidoc.Parser
         {
             var builder = new StringBuilder();
             string? next;
-            while (marker != (next = reader.NextLine()))
+            while ((next = reader.NextLine()) is not null && marker != next.Trim())
             {
                 builder.Append(next).Append('\n');
             }
