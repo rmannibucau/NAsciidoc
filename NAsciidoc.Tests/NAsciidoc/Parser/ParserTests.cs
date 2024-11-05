@@ -49,6 +49,35 @@ public class ParserTests
         );
     }
 
+    // ensure we can use custom extension blocks implementable in a custom visitor decorator
+    // here we use mermaid which enables to use mermaid in js mode to render the block content
+    // TIP: it can be done at build time if you accept to bring back node stack
+    [Fact]
+    public void CustomBlockType()
+    {
+        var body = new Parser().ParseBody(
+            new Reader(
+                """
+                    [mermaid]
+                    ....
+                    foo
+                    bar
+                    ....
+                    """.Replace("\r\n", "\n").Split('\n')
+            )
+        );
+        Assert.Equivalent(
+            new List<IElement>
+            {
+                new Listing(
+                    "foo\nbar",
+                    new Dictionary<string, string> { { "", "mermaid" } }
+                ),
+            },
+            body.Children
+        );
+    }
+
     [Fact]
     public void ParseHeaderWithConditionalBlocks()
     {
