@@ -49,7 +49,7 @@ namespace NAsciidoc.Parser
 
         public Document Parse(string content, ParserContext? context = null)
         {
-            return Parse(content.Replace("\n\r", "\n").Split('\n'), context);
+            return Parse(content.Replace("\r\n", "\n").Replace("\r", "\n").Split('\n'), context);
         }
 
         public Document Parse(IList<string> strings, ParserContext? context = null)
