@@ -79,6 +79,7 @@ namespace NAsciidoc.Parser
                     line => true,
                     resolver,
                     new Dictionary<string, string>(initialAttributes??ImmutableDictionary<string, string>.Empty),
+                    true,
                     true
                 )
             );
@@ -356,7 +357,7 @@ namespace NAsciidoc.Parser
                     .Where(it => !string.IsNullOrWhiteSpace(it))
                     .Select(it =>
                     {
-                        int sep = it.IndexOf("..");
+                        int sep = it.IndexOf("..", StringComparison.Ordinal);
                         if (sep > 0)
                         {
                             return new List<int>
@@ -427,6 +428,7 @@ namespace NAsciidoc.Parser
                     l => true,
                     resolver,
                     currentAttributes ?? ImmutableDictionary<string, string>.Empty,
+                    true,
                     true
                 );
             }
@@ -1031,7 +1033,8 @@ namespace NAsciidoc.Parser
                         l => true,
                         resolver,
                         currentAttributes,
-                        true
+                        true,
+                        false
                     );
                     children.Add(
                         elements.Count > 1
@@ -1230,7 +1233,8 @@ namespace NAsciidoc.Parser
                         s => true,
                         resolver,
                         currentAttributes,
-                        true
+                        true,
+                        false
                     );
                     var unwrapped = UnwrapElementIfPossible(
                         element.Count == 1 && element[0] is Paragraph p
@@ -1242,6 +1246,7 @@ namespace NAsciidoc.Parser
                         l => true,
                         resolver,
                         currentAttributes,
+                        false,
                         false
                     );
 
@@ -1412,7 +1417,8 @@ namespace NAsciidoc.Parser
                                             _ => true,
                                             resolver,
                                             new Dictionary<string, string>(currentAttributes),
-                                            true
+                                            true,
+                                            false
                                         )
                                 )
                             );
@@ -1642,6 +1648,7 @@ namespace NAsciidoc.Parser
                                                         l => true,
                                                         resolver,
                                                         currentAttributes,
+                                                        false,
                                                         false
                                                     ),
                                                     macro.Options
@@ -1657,6 +1664,7 @@ namespace NAsciidoc.Parser
                                                         l => true,
                                                         resolver,
                                                         currentAttributes,
+                                                        false,
                                                         false
                                                     ),
                                                     macro.Options
@@ -1679,6 +1687,7 @@ namespace NAsciidoc.Parser
                                                         l => true,
                                                         resolver,
                                                         currentAttributes,
+                                                        false,
                                                         false
                                                     ),
                                                     macro.Options
@@ -1958,6 +1967,7 @@ namespace NAsciidoc.Parser
                     line => !line!.StartsWith('=') || line.StartsWith(prefix),
                     resolver,
                     currentAttributes,
+                    true,
                     true
                 ),
                 options == null ? ImmutableDictionary<string, string>.Empty : options
@@ -2084,7 +2094,8 @@ namespace NAsciidoc.Parser
                     l => true,
                     resolver,
                     currentAttributes,
-                    true
+                    true,
+                    false
                 );
                 callOuts.Add(
                     new CallOut(
@@ -2137,7 +2148,7 @@ namespace NAsciidoc.Parser
                 reader.Rewind();
             }
             return new OpenBlock(
-                DoParse(new Reader(content), l => true, resolver, currentAttributes, true),
+                DoParse(new Reader(content), l => true, resolver, currentAttributes, true, false),
                 options ?? ImmutableDictionary<string, string>.Empty
             );
         }
@@ -2160,7 +2171,7 @@ namespace NAsciidoc.Parser
                 reader.Rewind();
             }
             return new Quote(
-                DoParse(new Reader(content), l => true, resolver, currentAttributes, true),
+                DoParse(new Reader(content), l => true, resolver, currentAttributes, true, false),
                 options ?? ImmutableDictionary<string, string>.Empty
             );
         }
@@ -2301,6 +2312,7 @@ namespace NAsciidoc.Parser
                         line => true,
                         resolver,
                         currentAttributes,
+                        true,
                         true
                     );
                     if (content.Count == 1)
@@ -2350,7 +2362,8 @@ namespace NAsciidoc.Parser
                     line => true,
                     resolver,
                     currentAttributes,
-                    false
+                    false,
+                    true
                 );
                 if (content.Count == 1)
                 {
@@ -2365,7 +2378,8 @@ namespace NAsciidoc.Parser
             Predicate<string?> continueTest,
             IContentResolver? resolver,
             IDictionary<string, string> attributes,
-            bool supportComplexStructures
+            bool supportComplexStructures,
+            bool canBeTitle
         )
         {
             var elements = new List<IElement>(8);
@@ -2423,7 +2437,7 @@ namespace NAsciidoc.Parser
                     );
                     options = null;
                 }
-                else if (next.StartsWith('.') && !next.StartsWith("..") && !next.StartsWith(". "))
+                else if (canBeTitle && next.StartsWith('.') && !next.StartsWith("..") && !next.StartsWith(". "))
                 {
                     options = Merge(
                         options,
@@ -2495,7 +2509,8 @@ namespace NAsciidoc.Parser
                                 l => true,
                                 resolver,
                                 attributes,
-                                supportComplexStructures
+                                supportComplexStructures,
+                                false
                             ),
                             options ?? ImmutableDictionary<string, string>.Empty
                         )

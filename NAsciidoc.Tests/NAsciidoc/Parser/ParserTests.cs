@@ -907,6 +907,28 @@ public class ParserTests
     }
 
     [Fact]
+    public void DotInList()
+    {
+        var body = new Parser().ParseBody(new Reader(["* .NET is a framework"]), null);
+        Assert.Equivalent(
+            new List<IElement>
+            {
+                new UnOrderedList(
+                    [
+                        new Text(
+                            ImmutableList<Text.Styling>.Empty,
+                            ".NET is a framework",
+                            ImmutableDictionary<string, string>.Empty
+                        )
+                    ],
+                    ImmutableDictionary<string, string>.Empty
+                )
+            },
+            body.Children
+        );
+    }
+
+    [Fact]
     public void LeadingDots()
     {
         var body = new Parser().ParseBody(new Reader(["... foobar"]), null);
