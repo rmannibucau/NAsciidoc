@@ -736,8 +736,8 @@ Site source base directory.
                 Attributes = new Dictionary<string, string>
                 {
                     { "noheader", "true" },
-                    { "data-uri", "" }
-                }
+                    { "data-uri", "" },
+                },
             }
         );
         renderer.VisitBody(doc);
@@ -816,7 +816,7 @@ Site source base directory.
         var renderer = new AsciidoctorLikeHtmlRenderer(
             new AsciidoctorLikeHtmlRenderer.Configuration
             {
-                Attributes = new Dictionary<string, string> { { "noheader", "true" } }
+                Attributes = new Dictionary<string, string> { { "noheader", "true" } },
             }
         );
         renderer.VisitBody(doc);
@@ -852,7 +852,7 @@ Site source base directory.
         var renderer = new AsciidoctorLikeHtmlRenderer(
             new AsciidoctorLikeHtmlRenderer.Configuration
             {
-                Attributes = new Dictionary<string, string> { { "noheader", "true" } }
+                Attributes = new Dictionary<string, string> { { "noheader", "true" } },
             }
         );
         renderer.VisitBody(doc);
@@ -1025,7 +1025,7 @@ Site source base directory.
         var renderer = new AsciidoctorLikeHtmlRenderer(
             new AsciidoctorLikeHtmlRenderer.Configuration
             {
-                Attributes = new Dictionary<string, string> { { "noheader", "true" } }
+                Attributes = new Dictionary<string, string> { { "noheader", "true" } },
             }
         );
         renderer.VisitBody(doc);

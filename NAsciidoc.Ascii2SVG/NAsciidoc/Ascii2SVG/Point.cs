@@ -46,6 +46,6 @@ public record Point(int X, int Y, Point.PointHint Hint)
         START_MARKER,
         END_MARKER,
         TICK,
-        DOT
+        DOT,
     }
 }

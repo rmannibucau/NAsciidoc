@@ -9,8 +9,12 @@ namespace NAsciidoc.Parser
     {
         private static readonly Author NoAuthor = new("", "");
         private static readonly Revision NoRevision = new("", "", "");
-        private static readonly Header NoHeader =
-            new("", NoAuthor, NoRevision, ImmutableDictionary<string, string>.Empty);
+        private static readonly Header NoHeader = new(
+            "",
+            NoAuthor,
+            NoRevision,
+            ImmutableDictionary<string, string>.Empty
+        );
 
         private static readonly IList<string> LinkPrefixes =
         [
@@ -20,7 +24,7 @@ namespace NAsciidoc.Parser
             "ftps://",
             "irc://",
             "file://",
-            "mailto:"
+            "mailto:",
         ];
 
         [GeneratedRegex("\\{(?<name>[^ }]+)}")]
@@ -78,7 +82,9 @@ namespace NAsciidoc.Parser
                     reader,
                     line => true,
                     resolver,
-                    new Dictionary<string, string>(initialAttributes??ImmutableDictionary<string, string>.Empty),
+                    new Dictionary<string, string>(
+                        initialAttributes ?? ImmutableDictionary<string, string>.Empty
+                    ),
                     true,
                     true
                 )
@@ -279,10 +285,10 @@ namespace NAsciidoc.Parser
             }
 
             return MapIf("source", null, "language", options)
-                   ?? MapIf("example", "exampleblock", "", options)
-                   ?? MapIf("verse", "verseblock", "", options)
-                   ?? MapIf("quote", "quoteblock", "attribution", options)
-                   ?? DoParseOptions(options, "", true);
+                ?? MapIf("example", "exampleblock", "", options)
+                ?? MapIf("verse", "verseblock", "", options)
+                ?? MapIf("quote", "quoteblock", "attribution", options)
+                ?? DoParseOptions(options, "", true);
         }
 
         private string? Subs(string? value, IDictionary<string, string> opts)
@@ -363,7 +369,7 @@ namespace NAsciidoc.Parser
                             return new List<int>
                             {
                                 int.Parse(it[..sep]),
-                                int.Parse(it[(sep + "..".Length)..])
+                                int.Parse(it[(sep + "..".Length)..]),
                             };
                         }
                         return [int.Parse(it)];
@@ -373,7 +379,7 @@ namespace NAsciidoc.Parser
                         {
                             1 => [src[range[0] - 1]],
                             2 => src[(range[0] - 1)..(range[1] == -1 ? src.Count : range[1])],
-                            _ => throw new InvalidOperationException()
+                            _ => throw new InvalidOperationException(),
                         }
                     )
                     .ToList();
@@ -438,7 +444,7 @@ namespace NAsciidoc.Parser
                     ImmutableList<Text.Styling>.Empty,
                     string.Join('\n', content) + '\n',
                     ImmutableDictionary<string, string>.Empty
-                )
+                ),
             ];
         }
 
@@ -458,7 +464,7 @@ namespace NAsciidoc.Parser
                         ImmutableList<Text.Styling>.Empty,
                         content,
                         ImmutableDictionary<string, string>.Empty
-                    )
+                    ),
                 ];
             }
 
@@ -471,7 +477,7 @@ namespace NAsciidoc.Parser
                         ImmutableList<Text.Styling>.Empty,
                         content,
                         ImmutableDictionary<string, string>.Empty
-                    )
+                    ),
                 ];
             }
 
@@ -484,7 +490,7 @@ namespace NAsciidoc.Parser
                         ImmutableList<Text.Styling>.Empty,
                         content,
                         ImmutableDictionary<string, string>.Empty
-                    )
+                    ),
                 ];
             }
             var include = DoInclude(
@@ -508,9 +514,9 @@ namespace NAsciidoc.Parser
                         ImmutableList<Text.Styling>.Empty,
                         content[..start],
                         ImmutableDictionary<string, string>.Empty
-                    )
+                    ),
                 ],
-                include
+                include,
             ];
             return data.SelectMany(it => it).ToList();
         }
@@ -787,7 +793,7 @@ namespace NAsciidoc.Parser
                         {
                             new List<string> { buffer[0].Value.TrimEnd() },
                             buffer.Skip(1).Take(buffer.Count - 2).Select(i => i.Value.Trim()),
-                            new List<string> { buffer[buffer.Count - 1].Value.TrimStart() }
+                            new List<string> { buffer[buffer.Count - 1].Value.TrimStart() },
                         }.SelectMany(it => it)
                     ),
                     null
@@ -889,7 +895,7 @@ namespace NAsciidoc.Parser
                 "TIP" => Admonition.AdmonitionLevel.Tip,
                 "NOTE" => Admonition.AdmonitionLevel.Note,
                 "WARNING" => Admonition.AdmonitionLevel.Warning,
-                _ => null
+                _ => null,
             };
             if (level is null)
             {
@@ -1551,13 +1557,20 @@ namespace NAsciidoc.Parser
                             var previousSemicolon = line.LastIndexOf(':', i);
                             if (previousSemicolon > 0 || canBeLink)
                             {
-                                if (line[previousSemicolon..Math.Min(previousSemicolon + "://".Length, end)] == "://")
+                                if (
+                                    line[
+                                        previousSemicolon..Math.Min(
+                                            previousSemicolon + "://".Length,
+                                            end
+                                        )
+                                    ] == "://"
+                                )
                                 {
                                     // likely a link
                                     var previousSpace = line.LastIndexOf(' ', previousSemicolon);
                                     if (previousSpace >= 0)
                                     {
-                                        var link = line[(previousSpace + 1)..(end+1)];
+                                        var link = line[(previousSpace + 1)..(end + 1)];
                                         if (IsLink(link) || link.StartsWith("link:"))
                                         {
                                             backward = previousSpace + 1;
@@ -1586,7 +1599,10 @@ namespace NAsciidoc.Parser
                                     FlushText(elements, line[start..backward]);
                                 }
 
-                                var macroMarker = optionsPrefix.IndexOf(':', StringComparison.Ordinal);
+                                var macroMarker = optionsPrefix.IndexOf(
+                                    ':',
+                                    StringComparison.Ordinal
+                                );
                                 if (macroMarker > 0 && !IsLink(optionsPrefix))
                                 {
                                     var inlined =
@@ -1852,7 +1868,7 @@ namespace NAsciidoc.Parser
                                                             new KeyValuePair<string, string>(
                                                                 "role",
                                                                 $"{roleValue} inline-code".TrimStart()
-                                                            )
+                                                            ),
                                                         ]
                                                     )
                                                     .ToDictionary()
@@ -2203,21 +2219,21 @@ namespace NAsciidoc.Parser
                         {
                             options = new Dictionary<string, string>
                             {
-                                { "role", "tableblock halign-left valign-top" }
+                                { "role", "tableblock halign-left valign-top" },
                             };
                         }
                         if (i.Contains('>'))
                         {
                             options = new Dictionary<string, string>
                             {
-                                { "role", "tableblock halign-right valign-top" }
+                                { "role", "tableblock halign-right valign-top" },
                             };
                         }
                         if (i.Contains('^'))
                         {
                             options = new Dictionary<string, string>
                             {
-                                { "role", "tableblock halign-center valign-top" }
+                                { "role", "tableblock halign-center valign-top" },
                             };
                         }
                         return ToTableCellFormatter(i, resolver, currentAttributes, options);
@@ -2437,7 +2453,12 @@ namespace NAsciidoc.Parser
                     );
                     options = null;
                 }
-                else if (canBeTitle && next.StartsWith('.') && !next.StartsWith("..") && !next.StartsWith(". "))
+                else if (
+                    canBeTitle
+                    && next.StartsWith('.')
+                    && !next.StartsWith("..")
+                    && !next.StartsWith(". ")
+                )
                 {
                     options = Merge(
                         options,
@@ -2802,15 +2823,16 @@ namespace NAsciidoc.Parser
                                 if (
                                     macro.Name switch
                                     {
-                                        "ifdef"
-                                            => new ConditionalBlock.Ifdef(macro.Label).Test(ctx),
-                                        "ifndef"
-                                            => new ConditionalBlock.Ifndef(macro.Label).Test(ctx),
-                                        "ifeval"
-                                            => new ConditionalBlock.Ifeval(
-                                                ParseCondition(macro.Label.Trim(), attributes)
-                                            ).Test(ctx),
-                                        _ => false // not possible
+                                        "ifdef" => new ConditionalBlock.Ifdef(macro.Label).Test(
+                                            ctx
+                                        ),
+                                        "ifndef" => new ConditionalBlock.Ifndef(macro.Label).Test(
+                                            ctx
+                                        ),
+                                        "ifeval" => new ConditionalBlock.Ifeval(
+                                            ParseCondition(macro.Label.Trim(), attributes)
+                                        ).Test(ctx),
+                                        _ => false, // not possible
                                     }
                                 )
                                 {
@@ -2862,47 +2884,41 @@ namespace NAsciidoc.Parser
                 key => parsingAttributes.TryGetValue(key, out var v) ? v : ctx.Attribute(key);
             return operatorType switch
             {
-                "=="
-                    => context =>
-                        Eval(
-                            leftOperand,
-                            rightOperand,
-                            attributeAccessor(context),
-                            it => it.Item1 == it.Item2
-                        ),
-                "!="
-                    => context =>
-                        !Eval(
-                            leftOperand,
-                            rightOperand,
-                            attributeAccessor(context),
-                            it => it.Item1 == it.Item2
-                        ),
-                "<"
-                    => context =>
-                        EvalNumbers(leftOperand, rightOperand, context, it => it.Item1 < it.Item2),
-                "<="
-                    => context =>
-                    {
-                        var attributes = attributeAccessor(context);
-                        return double.Parse(EarlyAttributeReplacement(leftOperand, attributes))
-                            <= double.Parse(EarlyAttributeReplacement(rightOperand, attributes));
-                    },
-                ">"
-                    => context =>
-                    {
-                        var attributes = attributeAccessor(context);
-                        return double.Parse(EarlyAttributeReplacement(leftOperand, attributes))
-                            > double.Parse(EarlyAttributeReplacement(rightOperand, attributes));
-                    },
-                ">="
-                    => context =>
-                    {
-                        var attributes = attributeAccessor(context);
-                        return double.Parse(EarlyAttributeReplacement(leftOperand, attributes))
-                            >= double.Parse(EarlyAttributeReplacement(rightOperand, attributes));
-                    },
-                _ => throw new InvalidOperationException($"Unknown operator '{operatorType}'")
+                "==" => context =>
+                    Eval(
+                        leftOperand,
+                        rightOperand,
+                        attributeAccessor(context),
+                        it => it.Item1 == it.Item2
+                    ),
+                "!=" => context =>
+                    !Eval(
+                        leftOperand,
+                        rightOperand,
+                        attributeAccessor(context),
+                        it => it.Item1 == it.Item2
+                    ),
+                "<" => context =>
+                    EvalNumbers(leftOperand, rightOperand, context, it => it.Item1 < it.Item2),
+                "<=" => context =>
+                {
+                    var attributes = attributeAccessor(context);
+                    return double.Parse(EarlyAttributeReplacement(leftOperand, attributes))
+                        <= double.Parse(EarlyAttributeReplacement(rightOperand, attributes));
+                },
+                ">" => context =>
+                {
+                    var attributes = attributeAccessor(context);
+                    return double.Parse(EarlyAttributeReplacement(leftOperand, attributes))
+                        > double.Parse(EarlyAttributeReplacement(rightOperand, attributes));
+                },
+                ">=" => context =>
+                {
+                    var attributes = attributeAccessor(context);
+                    return double.Parse(EarlyAttributeReplacement(leftOperand, attributes))
+                        >= double.Parse(EarlyAttributeReplacement(rightOperand, attributes));
+                },
+                _ => throw new InvalidOperationException($"Unknown operator '{operatorType}'"),
             };
         }
 

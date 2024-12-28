@@ -17,7 +17,7 @@ public class ParserTests
             header.Attributes
         );
     }
-    
+
     [Fact] // check for https://github.com/yupiik/tools-maven-plugin/issues/21
     public void ParseIndentedCode()
     {
@@ -25,14 +25,14 @@ public class ParserTests
             new Reader(
                 // intentation is intended
                 """
-                        [source,xml]
-                        ----
-                        <dependency>
-                            <groupId>io.quarkiverse.qute.web</groupId>
-                            <artifactId>quarkus-qute-web</artifactId>
-                        </dependency>
-                        ----
-                    """.Split('\n')
+                    [source,xml]
+                    ----
+                    <dependency>
+                        <groupId>io.quarkiverse.qute.web</groupId>
+                        <artifactId>quarkus-qute-web</artifactId>
+                    </dependency>
+                    ----
+                """.Split('\n')
             )
         );
         Assert.Equivalent(
@@ -58,21 +58,18 @@ public class ParserTests
         var body = new Parser().ParseBody(
             new Reader(
                 """
-                    [mermaid]
-                    ....
-                    foo
-                    bar
-                    ....
-                    """.Replace("\r\n", "\n").Split('\n')
+                [mermaid]
+                ....
+                foo
+                bar
+                ....
+                """.Replace("\r\n", "\n").Split('\n')
             )
         );
         Assert.Equivalent(
             new List<IElement>
             {
-                new Listing(
-                    "foo\nbar",
-                    new Dictionary<string, string> { { "", "mermaid" } }
-                ),
+                new Listing("foo\nbar", new Dictionary<string, string> { { "", "mermaid" } }),
             },
             body.Children
         );
@@ -107,7 +104,7 @@ public class ParserTests
                     { "idprefix", "" },
                     { "idseparator", "-" },
                     { "toc", "left" },
-                    { "icons", "font" }
+                    { "icons", "font" },
                 },
                 header.Attributes
             );
@@ -127,7 +124,7 @@ public class ParserTests
                     { "important-caption", ":exclamation:" },
                     { "note-caption", ":paperclip:" },
                     { "tip-caption", ":bulb:" },
-                    { "warning-caption", ":warning:" }
+                    { "warning-caption", ":warning:" },
                 },
                 header.Attributes
             );
@@ -153,7 +150,7 @@ public class ParserTests
             new Dictionary<string, string>
             {
                 { "attr-1", "v1" },
-                { "attr-2", "v2 and it continues" }
+                { "attr-2", "v2 and it continues" },
             },
             header.Attributes
         );
@@ -168,7 +165,7 @@ public class ParserTests
                     "= Title",
                     "firstname middlename lastname <email>",
                     "revision number, revision date: revision revmark",
-                    ":attr: value"
+                    ":attr: value",
                 ]
             )
             .Header;
@@ -225,7 +222,7 @@ public class ParserTests
                                             ImmutableList<Text.Styling>.Empty,
                                             ")",
                                             ImmutableDictionary<string, string>.Empty
-                                        )
+                                        ),
                                     ],
                                     ImmutableDictionary<string, string>.Empty
                                 ),
@@ -246,7 +243,7 @@ public class ParserTests
                                             ImmutableList<Text.Styling>.Empty,
                                             ".",
                                             ImmutableDictionary<string, string>.Empty
-                                        )
+                                        ),
                                     ],
                                     ImmutableDictionary<string, string>.Empty
                                 )
@@ -269,7 +266,7 @@ public class ParserTests
                                             ImmutableList<Text.Styling>.Empty,
                                             ")",
                                             ImmutableDictionary<string, string>.Empty
-                                        )
+                                        ),
                                     ],
                                     ImmutableDictionary<string, string>.Empty
                                 ),
@@ -292,7 +289,7 @@ public class ParserTests
                                                     ImmutableList<Text.Styling>.Empty,
                                                     ".",
                                                     ImmutableDictionary<string, string>.Empty
-                                                )
+                                                ),
                                             ],
                                             ImmutableDictionary<string, string>.Empty
                                         ),
@@ -300,11 +297,11 @@ public class ParserTests
                                             ImmutableList<Text.Styling>.Empty,
                                             "multiline",
                                             ImmutableDictionary<string, string>.Empty
-                                        )
+                                        ),
                                     ],
                                     ImmutableDictionary<string, string>.Empty
                                 )
-                            }
+                            },
                         },
                         ImmutableDictionary<string, string>.Empty
                     );
@@ -326,7 +323,7 @@ public class ParserTests
             Assert.Equivalent(
                 new List<IElement>
                 {
-                    new PassthroughBlock("pass", ImmutableDictionary<string, string>.Empty)
+                    new PassthroughBlock("pass", ImmutableDictionary<string, string>.Empty),
                 },
                 doc.Body.Children
             );
@@ -373,7 +370,7 @@ public class ParserTests
                             ImmutableList<Text.Styling>.Empty,
                             ".",
                             ImmutableDictionary<string, string>.Empty
-                        )
+                        ),
                     ],
                     ImmutableDictionary<string, string>.Empty
                 ),
@@ -398,7 +395,7 @@ public class ParserTests
                             ImmutableList<Text.Styling>.Empty,
                             "s.",
                             ImmutableDictionary<string, string>.Empty
-                        )
+                        ),
                     ],
                     ImmutableDictionary<string, string>.Empty
                 ),
@@ -418,7 +415,7 @@ public class ParserTests
                             ImmutableList<Text.Styling>.Empty,
                             " go?",
                             ImmutableDictionary<string, string>.Empty
-                        )
+                        ),
                     ],
                     ImmutableDictionary<string, string>.Empty
                 ),
@@ -438,7 +435,7 @@ public class ParserTests
                             ImmutableList<Text.Styling>.Empty,
                             " twenty VMs.",
                             ImmutableDictionary<string, string>.Empty
-                        )
+                        ),
                     ],
                     ImmutableDictionary<string, string>.Empty
                 ),
@@ -458,10 +455,10 @@ public class ParserTests
                             ImmutableList<Text.Styling>.Empty,
                             " must be fulfilled by the theme.",
                             ImmutableDictionary<string, string>.Empty
-                        )
+                        ),
                     ],
                     ImmutableDictionary<string, string>.Empty
-                )
+                ),
             },
             body.Children
         );
@@ -504,7 +501,7 @@ public class ParserTests
                             ImmutableList<Text.Styling>.Empty,
                             ".",
                             ImmutableDictionary<string, string>.Empty
-                        )
+                        ),
                     ],
                     ImmutableDictionary<string, string>.Empty
                 ),
@@ -539,7 +536,7 @@ public class ParserTests
                             ImmutableList<Text.Styling>.Empty,
                             " go?",
                             ImmutableDictionary<string, string>.Empty
-                        )
+                        ),
                     ],
                     ImmutableDictionary<string, string>.Empty
                 ),
@@ -547,7 +544,7 @@ public class ParserTests
                     ImmutableList<Text.Styling>.Empty,
                     "end.",
                     ImmutableDictionary<string, string>.Empty
-                )
+                ),
             },
             body.Children
         );
@@ -577,7 +574,7 @@ public class ParserTests
                     new Dictionary<string, string>
                     {
                         { "role", "external" },
-                        { "window", "_blank" }
+                        { "window", "_blank" },
                     }
                 ),
                 new Paragraph(
@@ -596,10 +593,10 @@ public class ParserTests
                             ImmutableList<Text.Styling>.Empty,
                             ".",
                             ImmutableDictionary<string, string>.Empty
-                        )
+                        ),
                     ],
                     ImmutableDictionary<string, string>.Empty
-                )
+                ),
             },
             body.Children
         );
@@ -615,7 +612,7 @@ public class ParserTests
                     "https://yupiik.io",
                     "https://yupiik.io",
                     ImmutableDictionary<string, string>.Empty
-                )
+                ),
             },
             new Parser().Parse(new Reader(["https://yupiik.io"]), null).Body.Children
         );
@@ -648,16 +645,16 @@ public class ParserTests
                             ImmutableList<Text.Styling>.Empty,
                             " links.",
                             ImmutableDictionary<string, string>.Empty
-                        )
+                        ),
                     ],
                     ImmutableDictionary<string, string>.Empty
-                )
+                ),
             },
             new Parser()
                 .Parse(
                     new Reader(
                         [
-                            "in a sentence https://yupiik.io and multiple https://www.yupiik.io links."
+                            "in a sentence https://yupiik.io and multiple https://www.yupiik.io links.",
                         ]
                     ),
                     null
@@ -677,7 +674,7 @@ public class ParserTests
                     "https://yupiik.io",
                     "Yupiik OSS",
                     new Dictionary<string, string> { { "role", "inline-code" } }
-                )
+                ),
             },
             body.Children
         );
@@ -694,7 +691,7 @@ public class ParserTests
                     "foo",
                     new Dictionary<string, string> { { "role", "test" } },
                     true
-                )
+                ),
             },
             new Parser().Parse(new Reader(["link:foo[role=\"test\"]"]), null).Body.Children
         );
@@ -713,7 +710,7 @@ public class ParserTests
                     "https://yupiik.io",
                     "Yupiik OSS",
                     ImmutableDictionary<string, string>.Empty
-                )
+                ),
             },
             body.Children
         );
@@ -781,10 +778,10 @@ public class ParserTests
                                     ImmutableList<Text.Styling>.Empty,
                                     " go?",
                                     ImmutableDictionary<string, string>.Empty
-                                )
+                                ),
                             ],
                             ImmutableDictionary<string, string>.Empty
-                        )
+                        ),
                     ],
                     ImmutableDictionary<string, string>.Empty
                 ),
@@ -800,10 +797,10 @@ public class ParserTests
                             ImmutableList<Text.Styling>.Empty,
                             "Something key.",
                             ImmutableDictionary<string, string>.Empty
-                        )
+                        ),
                     ],
                     ImmutableDictionary<string, string>.Empty
-                )
+                ),
             },
             body.Children
         );
@@ -850,13 +847,13 @@ public class ParserTests
                                     ImmutableList<Text.Styling>.Empty,
                                     "Something key.",
                                     new Dictionary<string, string> { { "role", "center" } }
-                                )
+                                ),
                             ],
                             new Dictionary<string, string> { { "role", "second" } }
-                        )
+                        ),
                     ],
                     new Dictionary<string, string> { { "role", "first" } }
-                )
+                ),
             },
             body.Children
         );
@@ -878,7 +875,7 @@ public class ParserTests
                     ),
                     ImmutableList<IElement>.Empty,
                     ImmutableDictionary<string, string>.Empty
-                )
+                ),
             },
             body.Children
         );
@@ -897,10 +894,10 @@ public class ParserTests
                             ImmutableList<Text.Styling>.Empty,
                             "foo++",
                             ImmutableDictionary<string, string>.Empty
-                        )
+                        ),
                     ],
                     ImmutableDictionary<string, string>.Empty
-                )
+                ),
             },
             body.Children
         );
@@ -919,10 +916,10 @@ public class ParserTests
                             ImmutableList<Text.Styling>.Empty,
                             ".NET is a framework",
                             ImmutableDictionary<string, string>.Empty
-                        )
+                        ),
                     ],
                     ImmutableDictionary<string, string>.Empty
-                )
+                ),
             },
             body.Children
         );
@@ -939,7 +936,7 @@ public class ParserTests
                     ImmutableList<Text.Styling>.Empty,
                     "... foobar",
                     ImmutableDictionary<string, string>.Empty
-                )
+                ),
             },
             body.Children
         );
@@ -981,13 +978,13 @@ public class ParserTests
                             ImmutableList<Text.Styling>.Empty,
                             "first",
                             ImmutableDictionary<string, string>.Empty
-                        )
+                        ),
                     ],
                     new Dictionary<string, string>
                     {
                         { "data-dummy", "true" },
                         { "data-foo", "bar" },
-                        { "role", "step" }
+                        { "role", "step" },
                     }
                 ),
                 new Section(
@@ -1010,18 +1007,18 @@ public class ParserTests
                                     ImmutableList<Text.Styling>.Empty,
                                     "Something key.",
                                     ImmutableDictionary<string, string>.Empty
-                                )
+                                ),
                             ],
                             ImmutableDictionary<string, string>.Empty
-                        )
+                        ),
                     ],
                     new Dictionary<string, string>
                     {
                         { "role", "step" },
                         { "data-dummy", "true" },
-                        { "data-foo", "bar2" }
+                        { "data-foo", "bar2" },
                     }
-                )
+                ),
             },
             body.Children
         );
@@ -1071,7 +1068,7 @@ public class ParserTests
                             ImmutableList<Text.Styling>.Empty,
                             "first",
                             ImmutableDictionary<string, string>.Empty
-                        )
+                        ),
                     ],
                     ImmutableDictionary<string, string>.Empty
                 ),
@@ -1108,10 +1105,10 @@ public class ParserTests
                                             ImmutableList<Text.Styling>.Empty,
                                             "go far",
                                             ImmutableDictionary<string, string>.Empty
-                                        )
+                                        ),
                                     ],
                                     ImmutableDictionary<string, string>.Empty
-                                )
+                                ),
                             ],
                             ImmutableDictionary<string, string>.Empty
                         ),
@@ -1137,13 +1134,13 @@ public class ParserTests
                                     ImmutableList<Text.Styling>.Empty,
                                     "yes",
                                     ImmutableDictionary<string, string>.Empty
-                                )
+                                ),
                             ],
                             ImmutableDictionary<string, string>.Empty
-                        )
+                        ),
                     ],
                     ImmutableDictionary<string, string>.Empty
-                )
+                ),
             },
             body.Children
         );
@@ -1172,7 +1169,7 @@ public class ParserTests
                     ImmutableList<CallOut>.Empty,
                     new Dictionary<string, string> { { "language", "java" }, { "role", "hljs" } },
                     false
-                )
+                ),
             },
             body.Children
         );
@@ -1198,7 +1195,7 @@ public class ParserTests
                 new PassthroughBlock(
                     "<script defer src=\"/js/test.js?v=1\"></script>",
                     new Dictionary<string, string> { { "subs", "attributes" } }
-                )
+                ),
             },
             body.Children
         );
@@ -1226,7 +1223,7 @@ public class ParserTests
                     ImmutableList<CallOut>.Empty,
                     new Dictionary<string, string> { { "subs", "attributes" } },
                     false
-                )
+                ),
             },
             body.Children
         );
@@ -1278,10 +1275,10 @@ public class ParserTests
                                     new Dictionary<string, string>
                                     {
                                         { "language", "java" },
-                                        { "role", "hljs" }
+                                        { "role", "hljs" },
                                     },
                                     false
-                                )
+                                ),
                             ],
                             ImmutableDictionary<string, string>.Empty
                         ),
@@ -1297,7 +1294,7 @@ public class ParserTests
                                     ImmutableList<CallOut>.Empty,
                                     ImmutableDictionary<string, string>.Empty,
                                     false
-                                )
+                                ),
                             ],
                             ImmutableDictionary<string, string>.Empty
                         ),
@@ -1305,10 +1302,10 @@ public class ParserTests
                             ImmutableList<Text.Styling>.Empty,
                             "end",
                             ImmutableDictionary<string, string>.Empty
-                        )
+                        ),
                     ],
                     ImmutableDictionary<string, string>.Empty
-                )
+                ),
             },
             body.Children
         );
@@ -1362,11 +1359,11 @@ public class ParserTests
                                 "Defines an attribute of the record.",
                                 ImmutableDictionary<string, string>.Empty
                             )
-                        )
+                        ),
                     ],
                     new Dictionary<string, string> { { "language", "java" }, { "role", "hljs" } },
                     false
-                )
+                ),
             },
             body.Children
         );
@@ -1398,10 +1395,10 @@ public class ParserTests
                             ImmutableList<Text.Styling>.Empty,
                             "item 2",
                             ImmutableDictionary<string, string>.Empty
-                        )
+                        ),
                     ],
                     ImmutableDictionary<string, string>.Empty
-                )
+                ),
             },
             body.Children
         );
@@ -1460,22 +1457,22 @@ public class ParserTests
                                                                 string,
                                                                 string
                                                             >.Empty
-                                                        )
+                                                        ),
                                                     ],
                                                     ImmutableDictionary<string, string>.Empty
-                                                )
+                                                ),
                                             ],
                                             ImmutableDictionary<string, string>.Empty
-                                        )
+                                        ),
                                     ],
                                     ImmutableDictionary<string, string>.Empty
-                                )
+                                ),
                             ],
                             ImmutableDictionary<string, string>.Empty
-                        )
+                        ),
                     ],
                     ImmutableDictionary<string, string>.Empty
-                )
+                ),
             },
             body.Children
         );
@@ -1507,10 +1504,10 @@ public class ParserTests
                             ImmutableList<Text.Styling>.Empty,
                             "item 2",
                             ImmutableDictionary<string, string>.Empty
-                        )
+                        ),
                     ],
                     ImmutableDictionary<string, string>.Empty
-                )
+                ),
             },
             body.Children
         );
@@ -1552,7 +1549,7 @@ public class ParserTests
                                     ImmutableList<CallOut>.Empty,
                                     new Dictionary<string, string> { { "language", "java" } },
                                     false
-                                )
+                                ),
                             ],
                             ImmutableDictionary<string, string>.Empty
                         ),
@@ -1560,10 +1557,10 @@ public class ParserTests
                             ImmutableList<Text.Styling>.Empty,
                             "item 2",
                             ImmutableDictionary<string, string>.Empty
-                        )
+                        ),
                     ],
                     ImmutableDictionary<string, string>.Empty
-                )
+                ),
             },
             body.Children
         );
@@ -1607,10 +1604,10 @@ public class ParserTests
                                             ImmutableList<Text.Styling>.Empty,
                                             "item 1 2",
                                             ImmutableDictionary<string, string>.Empty
-                                        )
+                                        ),
                                     ],
                                     ImmutableDictionary<string, string>.Empty
-                                )
+                                ),
                             ],
                             ImmutableDictionary<string, string>.Empty
                         ),
@@ -1627,16 +1624,16 @@ public class ParserTests
                                             ImmutableList<Text.Styling>.Empty,
                                             "item 2 1",
                                             ImmutableDictionary<string, string>.Empty
-                                        )
+                                        ),
                                     ],
                                     ImmutableDictionary<string, string>.Empty
-                                )
+                                ),
                             ],
                             ImmutableDictionary<string, string>.Empty
-                        )
+                        ),
                     ],
                     ImmutableDictionary<string, string>.Empty
-                )
+                ),
             },
             body.Children
         );
@@ -1681,10 +1678,10 @@ public class ParserTests
                                             ImmutableList<Text.Styling>.Empty,
                                             "item 1 2",
                                             ImmutableDictionary<string, string>.Empty
-                                        )
+                                        ),
                                     ],
                                     ImmutableDictionary<string, string>.Empty
-                                )
+                                ),
                             ],
                             ImmutableDictionary<string, string>.Empty
                         ),
@@ -1701,16 +1698,16 @@ public class ParserTests
                                             ImmutableList<Text.Styling>.Empty,
                                             "item 2 1",
                                             ImmutableDictionary<string, string>.Empty
-                                        )
+                                        ),
                                     ],
                                     ImmutableDictionary<string, string>.Empty
-                                )
+                                ),
                             ],
                             ImmutableDictionary<string, string>.Empty
-                        )
+                        ),
                     ],
                     new Dictionary<string, string> { { "role", "iconed" } }
-                )
+                ),
             },
             body.Children
         );
@@ -1743,10 +1740,10 @@ public class ParserTests
                             ImmutableList<Text.Styling>.Empty,
                             "item 2",
                             ImmutableDictionary<string, string>.Empty
-                        )
+                        ),
                     ],
                     ImmutableDictionary<string, string>.Empty
-                )
+                ),
             },
             body.Children
         );
@@ -1779,10 +1776,10 @@ public class ParserTests
                             ImmutableList<Text.Styling>.Empty,
                             "item 2",
                             ImmutableDictionary<string, string>.Empty
-                        )
+                        ),
                     ],
                     new Dictionary<string, string> { { "title", "Foo" } }
-                )
+                ),
             },
             body.Children
         );
@@ -1812,7 +1809,7 @@ public class ParserTests
                             "Hard drive",
                             "Permanent storage for operating system and/or user files."
                         },
-                        { "RAM", "Temporarily stores information the CPU uses during operation." }
+                        { "RAM", "Temporarily stores information the CPU uses during operation." },
                     }
                         .Select(it => new KeyValuePair<IElement, IElement>(
                             new Text(
@@ -1828,7 +1825,7 @@ public class ParserTests
                         ))
                         .ToDictionary(),
                     ImmutableDictionary<string, string>.Empty
-                )
+                ),
             },
             body.Children
         );
@@ -1870,7 +1867,7 @@ public class ParserTests
                                         ImmutableList<Text.Styling>.Empty,
                                         "Eggs",
                                         ImmutableDictionary<string, string>.Empty
-                                    )
+                                    ),
                                 ],
                                 ImmutableDictionary<string, string>.Empty
                             )
@@ -1883,7 +1880,7 @@ public class ParserTests
                                         ImmutableList<Text.Styling>.Empty,
                                         "Bread",
                                         ImmutableDictionary<string, string>.Empty
-                                    )
+                                    ),
                                 ],
                                 ImmutableDictionary<string, string>.Empty
                             )
@@ -1896,11 +1893,11 @@ public class ParserTests
                                         ImmutableList<Text.Styling>.Empty,
                                         "Bananas",
                                         ImmutableDictionary<string, string>.Empty
-                                    )
+                                    ),
                                 ],
                                 ImmutableDictionary<string, string>.Empty
                             )
-                        }
+                        },
                     }
                         .Select(it => new KeyValuePair<IElement, IElement>(
                             new Text(
@@ -1912,7 +1909,7 @@ public class ParserTests
                         ))
                         .ToDictionary(),
                     ImmutableDictionary<string, string>.Empty
-                )
+                ),
             },
             body.Children
         );
@@ -1960,7 +1957,7 @@ public class ParserTests
                             ImmutableList<Text.Styling>.Empty,
                             " or",
                             ImmutableDictionary<string, string>.Empty
-                        )
+                        ),
                     ],
                     ImmutableDictionary<string, string>.Empty
                 ),
@@ -1969,7 +1966,7 @@ public class ParserTests
                     "as-a-block.jpg",
                     new Dictionary<string, string> { { "alt", "Foo" }, { "width", "100%" } },
                     false
-                )
+                ),
             },
             body.Children
         );
@@ -1997,7 +1994,7 @@ public class ParserTests
                         "Wolpertingers are known to nest in server racks. Enter at your own risk.",
                         ImmutableDictionary<string, string>.Empty
                     )
-                )
+                ),
             },
             body.Children
         );
@@ -2029,10 +2026,10 @@ public class ParserTests
                             ImmutableList<Text.Styling>.Empty,
                             " describes how automatic anchors work.",
                             ImmutableDictionary<string, string>.Empty
-                        )
+                        ),
                     ],
                     ImmutableDictionary<string, string>.Empty
-                )
+                ),
             },
             body.Children
         );
@@ -2066,10 +2063,10 @@ public class ParserTests
                             ImmutableList<Text.Styling>.Empty,
                             "A configuration model is a record marked with RootConfiguration.",
                             ImmutableDictionary<string, string>.Empty
-                        )
+                        ),
                     ],
                     ImmutableDictionary<string, string>.Empty
-                )
+                ),
             },
             body.Children
         );
@@ -2094,15 +2091,14 @@ public class ParserTests
                     reference switch
                     {
                         "foo.adoc" => ["This is foo."],
-                        "bar.adoc"
-                            =>
-                            [
-                                "This is ignored.",
-                                "First included line.",
-                                "Last included line.",
-                                "Ignored again."
-                            ],
-                        _ => null
+                        "bar.adoc" =>
+                        [
+                            "This is ignored.",
+                            "First included line.",
+                            "Last included line.",
+                            "Ignored again.",
+                        ],
+                        _ => null,
                     }
             )
         );
@@ -2126,10 +2122,10 @@ public class ParserTests
                             ImmutableList<Text.Styling>.Empty,
                             "First included line. Last included line.",
                             ImmutableDictionary<string, string>.Empty
-                        )
+                        ),
                     ],
                     ImmutableDictionary<string, string>.Empty
-                )
+                ),
             },
             body.Children
         );
@@ -2153,7 +2149,7 @@ public class ParserTests
                         reference switch
                         {
                             "attributes.adoc" => [":url: https://yupiik.io"],
-                            _ => null
+                            _ => null,
                         }
                 )
             )
@@ -2161,7 +2157,7 @@ public class ParserTests
         Assert.Equivalent(
             new List<IElement>
             {
-                new Link("https://yupiik.io", "Yupiik", ImmutableDictionary<string, string>.Empty)
+                new Link("https://yupiik.io", "Yupiik", ImmutableDictionary<string, string>.Empty),
             },
             doc.Body.Children
         );
@@ -2187,7 +2183,7 @@ public class ParserTests
                         reference switch
                         {
                             "attributes.adoc" => [":url: https://rmannibucau.github.io"],
-                            _ => null
+                            _ => null,
                         }
                 )
             )
@@ -2197,7 +2193,7 @@ public class ParserTests
             {
                 { "pre", "yes" },
                 { "url", "https://rmannibucau.github.io" },
-                { "post", "true" }
+                { "post", "true" },
             },
             doc.Header.Attributes
         );
@@ -2239,7 +2235,7 @@ public class ParserTests
                                 ImmutableList<Text.Styling>.Empty,
                                 "Cell in column 2, row 1",
                                 ImmutableDictionary<string, string>.Empty
-                            )
+                            ),
                         ],
                         [
                             new Text(
@@ -2251,7 +2247,7 @@ public class ParserTests
                                 ImmutableList<Text.Styling>.Empty,
                                 "Cell in column 2, row 2",
                                 ImmutableDictionary<string, string>.Empty
-                            )
+                            ),
                         ],
                         [
                             new Text(
@@ -2263,11 +2259,11 @@ public class ParserTests
                                 ImmutableList<Text.Styling>.Empty,
                                 "Cell in column 2, row 3",
                                 ImmutableDictionary<string, string>.Empty
-                            )
-                        ]
+                            ),
+                        ],
                     ],
                     new Dictionary<string, string> { { "cols", "1,1" } }
-                )
+                ),
             },
             body.Children
         );
@@ -2297,11 +2293,11 @@ public class ParserTests
                                 ImmutableList<Text.Styling>.Empty,
                                 "c1",
                                 ImmutableDictionary<string, string>.Empty
-                            )
-                        ]
+                            ),
+                        ],
                     ],
                     new Dictionary<string, string> { { "opts", "header" } }
-                )
+                ),
             },
             body.Children
         );
@@ -2348,7 +2344,7 @@ public class ParserTests
                                         ImmutableList<CallOut>.Empty,
                                         new Dictionary<string, string> { { "language", "java" } },
                                         false
-                                    )
+                                    ),
                                 ],
                                 ImmutableDictionary<string, string>.Empty
                             ),
@@ -2356,7 +2352,7 @@ public class ParserTests
                                 ImmutableList<Text.Styling>.Empty,
                                 "Cell in column 2, row 1",
                                 ImmutableDictionary<string, string>.Empty
-                            )
+                            ),
                         ],
                         [
                             new Text(
@@ -2368,11 +2364,11 @@ public class ParserTests
                                 ImmutableList<Text.Styling>.Empty,
                                 "Cell in column 2, row 2",
                                 ImmutableDictionary<string, string>.Empty
-                            )
-                        ]
+                            ),
+                        ],
                     ],
                     new Dictionary<string, string> { { "cols", "1a,1" } }
-                )
+                ),
             },
             body.Children
         );
@@ -2409,7 +2405,7 @@ public class ParserTests
                                 ImmutableList<Text.Styling>.Empty,
                                 "Cell in column 2, row 1",
                                 ImmutableDictionary<string, string>.Empty
-                            )
+                            ),
                         ],
                         [
                             new Text(
@@ -2421,7 +2417,7 @@ public class ParserTests
                                 ImmutableList<Text.Styling>.Empty,
                                 "Cell in column 2, row 2",
                                 ImmutableDictionary<string, string>.Empty
-                            )
+                            ),
                         ],
                         [
                             new Text(
@@ -2433,11 +2429,11 @@ public class ParserTests
                                 ImmutableList<Text.Styling>.Empty,
                                 "Cell in column 2, row 3",
                                 ImmutableDictionary<string, string>.Empty
-                            )
-                        ]
+                            ),
+                        ],
                     ],
                     new Dictionary<string, string> { { "cols", "1,1" } }
-                )
+                ),
             },
             body.Children
         );
@@ -2463,10 +2459,10 @@ public class ParserTests
                             ImmutableList<Text.Styling>.Empty,
                             "Somebody said it.",
                             ImmutableDictionary<string, string>.Empty
-                        )
+                        ),
                     ],
                     ImmutableDictionary<string, string>.Empty
-                )
+                ),
             },
             body.Children
         );
@@ -2509,14 +2505,14 @@ public class ParserTests
                             ImmutableList<Text.Styling>.Empty,
                             "Dennis: Oh, what a giveaway! Did you hear that? Did you hear that, eh? That's what I'm on about! Did you see him repressing me? You saw him, Didn't you?",
                             ImmutableDictionary<string, string>.Empty
-                        )
+                        ),
                     ],
                     new Dictionary<string, string>
                     {
                         { "role", "quoteblock" },
-                        { "attribution", "Monty Python and the Holy Grail" }
+                        { "attribution", "Monty Python and the Holy Grail" },
                     }
-                )
+                ),
             },
             body.Children
         );
@@ -2556,7 +2552,7 @@ public class ParserTests
                                     ImmutableList<Text.Styling>.Empty,
                                     "What's new?",
                                     ImmutableDictionary<string, string>.Empty
-                                )
+                                ),
                             ],
                             ImmutableDictionary<string, string>.Empty
                         ),
@@ -2571,7 +2567,7 @@ public class ParserTests
                                     ImmutableList<Text.Styling>.Empty,
                                     "Like what?",
                                     ImmutableDictionary<string, string>.Empty
-                                )
+                                ),
                             ],
                             ImmutableDictionary<string, string>.Empty
                         ),
@@ -2591,7 +2587,7 @@ public class ParserTests
                                     ImmutableList<Text.Styling>.Empty,
                                     "Fenced code blocks",
                                     ImmutableDictionary<string, string>.Empty
-                                )
+                                ),
                             ],
                             ImmutableDictionary<string, string>.Empty
                         ),
@@ -2601,7 +2597,7 @@ public class ParserTests
                                     ImmutableList<Text.Styling>.Empty,
                                     "Is there more?",
                                     ImmutableDictionary<string, string>.Empty
-                                )
+                                ),
                             ],
                             ImmutableDictionary<string, string>.Empty
                         ),
@@ -2609,10 +2605,10 @@ public class ParserTests
                             ImmutableList<Text.Styling>.Empty,
                             "Yep. AsciiDoc and Markdown share a lot of common syntax already.",
                             ImmutableDictionary<string, string>.Empty
-                        )
+                        ),
                     ],
                     ImmutableDictionary<string, string>.Empty
-                )
+                ),
             },
             body.Children
         );
@@ -2649,14 +2645,14 @@ public class ParserTests
                             ImmutableList<Text.Styling>.Empty,
                             "It is used to present information related to the main content.",
                             ImmutableDictionary<string, string>.Empty
-                        )
+                        ),
                     ],
                     new Dictionary<string, string>
                     {
                         { "", "sidebar" },
-                        { "title", "Related information" }
+                        { "title", "Related information" },
                     }
-                )
+                ),
             },
             body.Children
         );
@@ -2685,10 +2681,10 @@ public class ParserTests
                             ImmutableList<Text.Styling>.Empty,
                             "This is value.",
                             ImmutableDictionary<string, string>.Empty
-                        )
+                        ),
                     ],
                     ImmutableDictionary<string, string>.Empty
-                )
+                ),
             },
             body.Children
         );
@@ -2717,10 +2713,10 @@ public class ParserTests
                             ImmutableList<Text.Styling>.Empty,
                             "This is value.",
                             ImmutableDictionary<string, string>.Empty
-                        )
+                        ),
                     ],
                     ImmutableDictionary<string, string>.Empty
-                )
+                ),
             },
             body.Children
         );
@@ -2742,7 +2738,7 @@ public class ParserTests
         Assert.Equivalent(
             new List<IElement>
             {
-                new PassthroughBlock("This is value.", ImmutableDictionary<string, string>.Empty)
+                new PassthroughBlock("This is value.", ImmutableDictionary<string, string>.Empty),
             },
             body.Children
         );
@@ -2766,7 +2762,7 @@ public class ParserTests
                 {
                     IElement.ElementType.Text,
                     IElement.ElementType.Attribute,
-                    IElement.ElementType.Text
+                    IElement.ElementType.Text,
                 },
                 p.Children.Select(it => it.Type())
             );
@@ -2787,7 +2783,7 @@ public class ParserTests
                     "fas fa-foo",
                     new Dictionary<string, string> { { "size", "2x" } },
                     true
-                )
+                ),
             },
             new Parser().ParseBody(new Reader(["icon:fas fa-foo[size=2x]"])).Children
         );
@@ -2801,7 +2797,7 @@ public class ParserTests
                     "heart",
                     new Dictionary<string, string> { { "size", "2x" } },
                     true
-                )
+                ),
             },
             new Parser().ParseBody(new Reader(["icon:heart[size=2x]"]), null).Children
         );
@@ -2826,7 +2822,10 @@ public class ParserTests
                     ----
                     include::{partialsdir}/content.properties[]
                     ----
-                    """.Replace("\r\n", "\n").Replace("content.properties", Path.GetFileName(tmpFile)).Split('\n')
+                    """.Replace("\r\n", "\n").Replace(
+                        "content.properties",
+                        Path.GetFileName(tmpFile)
+                    ).Split('\n')
                 ),
                 new LocalContentResolver(work)
             );
@@ -2839,10 +2838,10 @@ public class ParserTests
                         new Dictionary<string, string>
                         {
                             { "language", "properties" },
-                            { "role", "hljs" }
+                            { "role", "hljs" },
                         },
                         false
-                    )
+                    ),
                 },
                 body.Children
             );
@@ -2912,11 +2911,11 @@ public class ParserTests
                                                     ImmutableList<CallOut>.Empty,
                                                     ImmutableDictionary<string, string>.Empty,
                                                     false
-                                                )
+                                                ),
                                             ],
                                             ImmutableDictionary<string, string>.Empty
                                         )
-                                    }
+                                    },
                                 },
                                 ImmutableDictionary<string, string>.Empty
                             ),
@@ -2934,13 +2933,13 @@ public class ParserTests
                                             "end",
                                             ImmutableDictionary<string, string>.Empty
                                         )
-                                    }
+                                    },
                                 },
                                 ImmutableDictionary<string, string>.Empty
-                            )
+                            ),
                         ],
                         ImmutableDictionary<string, string>.Empty
-                    )
+                    ),
                 },
                 body.Children
             );

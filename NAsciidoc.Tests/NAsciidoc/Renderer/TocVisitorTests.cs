@@ -53,10 +53,10 @@ public class TocVisitorTests
                                         ),
                                         [],
                                         ImmutableDictionary<string, string>.Empty
-                                    )
+                                    ),
                                 ],
                                 ImmutableDictionary<string, string>.Empty
-                            )
+                            ),
                         ],
                         ImmutableDictionary<string, string>.Empty
                     ),
@@ -71,7 +71,7 @@ public class TocVisitorTests
                         new Text([], "S5", ImmutableDictionary<string, string>.Empty),
                         [],
                         ImmutableDictionary<string, string>.Empty
-                    )
+                    ),
                 ]
             )
         );

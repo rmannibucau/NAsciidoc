@@ -33,7 +33,7 @@ public class AsciidoctorLikeHtmlRenderer : Visitor<string>
                         Base = AssetsDir(configuration, "imagesdir"),
                         EnableRemoting =
                             configuration.Attributes.TryGetValue("data-enable-remoting", out var er)
-                            && bool.Parse(er)
+                            && bool.Parse(er),
                     }
                     : configuration.Resolver
             )
@@ -66,11 +66,9 @@ public class AsciidoctorLikeHtmlRenderer : Visitor<string>
         IDictionary<string, string> mainMap
     )
     {
-        return mainMap.TryGetValue(key, out var v)
-            ? v
-            : configuration.Attributes.TryGetValue(defaultKey, out var o)
-                ? o
-                : defaultValue;
+        return mainMap.TryGetValue(key, out var v) ? v
+            : configuration.Attributes.TryGetValue(defaultKey, out var o) ? o
+            : defaultValue;
     }
 
     protected string? Attr(string key, IDictionary<string, string> defaultMap)
@@ -631,7 +629,7 @@ public class AsciidoctorLikeHtmlRenderer : Visitor<string>
                                     element.Style,
                                     element.Value,
                                     ImmutableDictionary<string, string>.Empty
-                                )
+                                ),
                             ],
                             new Dictionary<string, string> { { "role", "quoteblock abstract" } }
                         )
@@ -705,7 +703,7 @@ public class AsciidoctorLikeHtmlRenderer : Visitor<string>
                             Text.Styling.Emphasis => "em",
                             Text.Styling.Sub => "sub",
                             Text.Styling.Sup => "sup",
-                            _ => "span"
+                            _ => "span",
                         }
                     )
                     .ToList();
@@ -1212,11 +1210,9 @@ public class AsciidoctorLikeHtmlRenderer : Visitor<string>
             .Append(element.Label.StartsWith("fa") && !element.Label.Contains(' ') ? "fa " : "")
             .Append(element.Label)
             .Append(
-                element.Options.TryGetValue("", out var t)
-                    ? $" fa-{t}"
-                    : element.Options.TryGetValue("size", out var size)
-                        ? $" fa-{size}"
-                        : ""
+                element.Options.TryGetValue("", out var t) ? $" fa-{t}"
+                : element.Options.TryGetValue("size", out var size) ? $" fa-{size}"
+                : ""
             );
         builder.Append("\"></i></span>");
         if (hasRole)
@@ -1305,7 +1301,7 @@ public class AsciidoctorLikeHtmlRenderer : Visitor<string>
                                             t.Options.Concat(
                                                     new Dictionary<string, string>
                                                     {
-                                                        { "nowrap", "true" }
+                                                        { "nowrap", "true" },
                                                     }
                                                 )
                                                 .ToDictionary()
@@ -1326,7 +1322,7 @@ public class AsciidoctorLikeHtmlRenderer : Visitor<string>
                                         .Options.Concat(
                                             new Dictionary<string, string>
                                             {
-                                                { "unsafeHtml", "true" }
+                                                { "unsafeHtml", "true" },
                                             }
                                         )
                                         .ToDictionary()
@@ -1606,11 +1602,10 @@ public class AsciidoctorLikeHtmlRenderer : Visitor<string>
 
     protected class State : IDisposable
     {
-        protected static readonly Document EmptyDoc =
-            new(
-                new Header("", null, null, ImmutableDictionary<string, string>.Empty),
-                new Body(ImmutableList<IElement>.Empty)
-            );
+        protected static readonly Document EmptyDoc = new(
+            new Header("", null, null, ImmutableDictionary<string, string>.Empty),
+            new Body(ImmutableList<IElement>.Empty)
+        );
 
         public Document Document { get; set; } = EmptyDoc;
         public IList<IElement>? CurrentChain { get; set; } = null;

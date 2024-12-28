@@ -13,7 +13,7 @@ namespace NAsciidoc.Model
             Tip,
             Important,
             Caution,
-            Warning
+            Warning,
         }
     }
 }

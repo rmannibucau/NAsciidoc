@@ -286,14 +286,14 @@ public class Svg
                     {
                         var v = value switch
                         {
-                            IDictionary<string, string> d
-                                => d.TryGetValue("fill", out var fill) ? fill : "none",
-                            JsonObject jd
-                                => jd.TryGetPropertyValue("fill", out var jsonFill)
-                                && jsonFill?.GetValueKind() == JsonValueKind.String
-                                    ? jsonFill.ToString()
-                                    : "none",
-                            _ => value.ToString()
+                            IDictionary<string, string> d => d.TryGetValue("fill", out var fill)
+                                ? fill
+                                : "none",
+                            JsonObject jd => jd.TryGetPropertyValue("fill", out var jsonFill)
+                            && jsonFill?.GetValueKind() == JsonValueKind.String
+                                ? jsonFill.ToString()
+                                : "none",
+                            _ => value.ToString(),
                         };
                         if ("none" != v && !string.IsNullOrWhiteSpace(v))
                         {

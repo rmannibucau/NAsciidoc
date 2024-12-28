@@ -242,7 +242,7 @@ public record Object(
         SE,
         SW,
         NW,
-        NE
+        NE,
     }
 
     public record PointState(Point[] Points, bool Closed) { }

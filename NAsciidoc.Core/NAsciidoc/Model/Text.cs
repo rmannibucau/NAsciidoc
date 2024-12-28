@@ -15,6 +15,6 @@ public record Text(IList<Text.Styling> Style, string Value, IDictionary<string, 
         Emphasis,
         Mark,
         Sub,
-        Sup
+        Sup,
     }
 }

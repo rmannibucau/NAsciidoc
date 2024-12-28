@@ -35,7 +35,7 @@ namespace NAsciidoc.Model
             OpenBlock,
             Quote, // TODO: we only support the markdown style quotes
             PassBlock,
-            ConditionalBlock
+            ConditionalBlock,
         }
     }
 }

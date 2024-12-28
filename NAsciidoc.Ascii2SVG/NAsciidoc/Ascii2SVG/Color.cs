@@ -11,7 +11,7 @@ public record Color(string C)
                 [
                     Convert.ToInt32(C[0].ToString(), 16) * 17,
                     Convert.ToInt32(C[1].ToString(), 16) * 17,
-                    Convert.ToInt32(C[2].ToString(), 16) * 17
+                    Convert.ToInt32(C[2].ToString(), 16) * 17,
                 ];
             case 6:
 
@@ -19,7 +19,7 @@ public record Color(string C)
                 [
                     Convert.ToInt32(C[0..2], 16),
                     Convert.ToInt32(C[2..4], 16),
-                    Convert.ToInt32(C[4..6], 16)
+                    Convert.ToInt32(C[4..6], 16),
                 ];
             default:
                 throw new ArgumentException($"unknown color: '{C}'", nameof(C));

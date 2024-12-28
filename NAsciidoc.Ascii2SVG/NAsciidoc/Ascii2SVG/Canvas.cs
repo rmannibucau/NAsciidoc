@@ -33,9 +33,9 @@ public partial record Canvas(
                     : new Dictionary<string, object>
                     {
                         { "fill", "#fff" },
-                        { "filter", "url(#dsFilter)" }
+                        { "filter", "url(#dsFilter)" },
                     }
-            }
+            },
         };
         var indent = new string(' ', tabWidth);
         var lines = data.Split('\n').Select(it => it.Replace("\n", indent)).ToArray();
@@ -226,7 +226,7 @@ public partial record Canvas(
         {
             var res = new Object[]
             {
-                new Object(points, [], false, false, false, false, [], "").Seal(this)
+                new Object(points, [], false, false, false, false, [], "").Seal(this),
             };
             var list = ScanPath([cur]);
             if (list != null && list.Value.Length > 0)

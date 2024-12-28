@@ -259,7 +259,7 @@ namespace NAsciidoc.Renderer
             { '\u2030', "&permil;" },
             { '\u2039', "&lsaquo;" },
             { '\u203A', "&rsaquo;" },
-            { '\u20AC', "&euro;" }
+            { '\u20AC', "&euro;" },
         };
 
         public string Apply(string value)
