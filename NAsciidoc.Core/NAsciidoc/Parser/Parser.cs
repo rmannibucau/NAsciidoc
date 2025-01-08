@@ -1310,7 +1310,9 @@ namespace NAsciidoc.Parser
                 {
                     if (i == line.Length - 2 && line.EndsWith(" +"))
                     {
+                        FlushText(elements, line[start..i]);
                         elements.Add(new LineBreak());
+                        start = line.Length;
                         break;
                     }
 
