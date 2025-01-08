@@ -32,7 +32,7 @@ public class ParserTests
                         <artifactId>quarkus-qute-web</artifactId>
                     </dependency>
                     ----
-                """.Split('\n')
+                """.ReplaceLineEndings("\n").Split('\n')
             )
         );
         Assert.Equivalent(
@@ -44,6 +44,21 @@ public class ParserTests
                     ImmutableDictionary<string, string>.Empty,
                     false
                 ),
+            },
+            body.Children
+        );
+    }
+    
+    [Fact]
+    public void ParseLineBreakEmptyLine()
+    {
+        var body = new Parser().ParseBody(
+            new Reader([" +"])
+        );
+        Assert.Equivalent(
+            new List<IElement>
+            {
+                new LineBreak(),
             },
             body.Children
         );
