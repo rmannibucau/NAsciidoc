@@ -291,7 +291,7 @@ namespace NAsciidoc.Parser
                 ?? DoParseOptions(options, "", true);
         }
 
-        private string? Subs(string? value, IDictionary<string, string> opts)
+        private string? Subs(string? value, IDictionary<string, string> opts, IDictionary<string, string>? attributes)
         {
             opts.TryGetValue("subs", out var subs);
             var result = value ?? "";
@@ -301,7 +301,7 @@ namespace NAsciidoc.Parser
             }
             if (subs.Contains("attributes") && !subs.Contains("-attributes"))
             {
-                result = EarlyAttributeReplacement(result, opts);
+                result = EarlyAttributeReplacement(result, opts, attributes ?? ImmutableDictionary<string, string>.Empty);
             }
             return result;
         }
@@ -523,6 +523,7 @@ namespace NAsciidoc.Parser
 
         private PassthroughBlock ParsePassthrough(
             Reader reader,
+            IDictionary<string, string>? documentOptions,
             IDictionary<string, string>? options,
             string marker,
             IContentResolver? resolver
@@ -547,7 +548,7 @@ namespace NAsciidoc.Parser
             var actualOpts = options ?? ImmutableDictionary<string, string>.Empty;
             if (!text.Contains("include::"))
             {
-                return new PassthroughBlock(Subs(text, actualOpts) ?? "", actualOpts);
+                return new PassthroughBlock(Subs(text, actualOpts, documentOptions) ?? "", actualOpts);
             }
 
             var filtered = string.Join(
@@ -571,7 +572,7 @@ namespace NAsciidoc.Parser
                         }
                     })
             );
-            return new PassthroughBlock(Subs(filtered, actualOpts) ?? "", actualOpts);
+            return new PassthroughBlock(Subs(filtered, actualOpts, documentOptions) ?? "", actualOpts);
         }
 
         private IElement NewText(
@@ -2070,7 +2071,7 @@ namespace NAsciidoc.Parser
             {
                 IDictionary<string, string> opts =
                     codeOptions ?? ImmutableDictionary<string, string>.Empty;
-                return new Code(Subs(code, opts) ?? "", ImmutableList<CallOut>.Empty, opts, false);
+                return new Code(Subs(code, opts, currentAttributes) ?? "", ImmutableList<CallOut>.Empty, opts, false);
             }
 
             var callOuts = new List<CallOut>(contentWithCallouts.CallOutReferences.Count);
@@ -2138,7 +2139,8 @@ namespace NAsciidoc.Parser
             return new Code(
                 Subs(
                     contentWithCallouts.Content,
-                    codeOptions ?? ImmutableDictionary<string, string>.Empty
+                    codeOptions ?? ImmutableDictionary<string, string>.Empty,
+                    currentAttributes
                 ) ?? "",
                 callOuts,
                 codeOptions ?? ImmutableDictionary<string, string>.Empty,
@@ -2444,6 +2446,7 @@ namespace NAsciidoc.Parser
                         new Listing(
                             ParsePassthrough(
                                 reader,
+                                attributes,
                                 options ?? ImmutableDictionary<string, string>.Empty,
                                 "....",
                                 resolver
@@ -2500,7 +2503,7 @@ namespace NAsciidoc.Parser
                 }
                 else if ("++++" == stripped)
                 {
-                    elements.Add(ParsePassthrough(reader, options, "++++", resolver));
+                    elements.Add(ParsePassthrough(reader, attributes, options, "++++", resolver));
                     options = null;
                 }
                 else if ("<<<" == stripped)
@@ -2961,12 +2964,15 @@ namespace NAsciidoc.Parser
 
         private string EarlyAttributeReplacement(
             string value,
-            IDictionary<string, string> attributes
+            params IDictionary<string, string>[] attributes
         )
         {
             return EarlyAttributeReplacement(
                 value,
-                k => attributes.TryGetValue(k, out var v) ? v! : null
+                k => attributes
+                    .Where(it => it.ContainsKey(k))
+                    .Select(it => it.TryGetValue(k, out var v) ? v : null)
+                    .FirstOrDefault()
             );
         }
 

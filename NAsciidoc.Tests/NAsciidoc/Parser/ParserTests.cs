@@ -1201,6 +1201,36 @@ public class ParserTests
         );
     }
 
+
+    [Fact]
+    public void PassthroughAttributeSubsFromDoc()
+    {
+        var body = new Parser().Parse(
+            new Reader(
+                """
+                = Title
+                :foo-version: 1
+
+                [subs=attributes]
+                ++++
+                <script defer src="/js/test.js?v={foo-version}"></script>
+                ++++
+                """.Replace("\r\n", "\n").Split('\n')
+            ),
+            null
+        ).Body;
+        Assert.Equivalent(
+            new List<IElement>
+            {
+                new PassthroughBlock(
+                    "<script defer src=\"/js/test.js?v=1\"></script>",
+                    new Dictionary<string, string> { { "subs", "attributes" } }
+                ),
+            },
+            body.Children
+        );
+    }
+
     [Fact]
     public void CodeAttributeSubs()
     {
