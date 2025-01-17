@@ -950,7 +950,7 @@ public class AsciidoctorLikeHtmlRenderer : Visitor<string>
         }
     }
 
-    public void visitOpenBlock(OpenBlock element)
+    public override void VisitOpenBlock(OpenBlock element)
     {
         state.StackChain(
             element.Children,
