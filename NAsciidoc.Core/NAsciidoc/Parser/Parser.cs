@@ -2578,17 +2578,25 @@ namespace NAsciidoc.Parser
                 else
                 {
                     reader.Rewind();
-                    elements.Add(
-                        UnwrapElementIfPossible(
-                            ParseParagraph(
-                                reader,
-                                options,
-                                resolver,
-                                attributes,
-                                supportComplexStructures
-                            )
+                    var element = UnwrapElementIfPossible(
+                        ParseParagraph(
+                            reader,
+                            options,
+                            resolver,
+                            attributes,
+                            supportComplexStructures
                         )
                     );
+                    if (element is Paragraph { Options.Count: 0 } p &&
+                        p.Children.Any(it => it.Type() == IElement.ElementType.Section))
+                    {
+                        elements.AddRange(p.Children);
+                    }
+                    else
+                    {
+                        elements.Add(element);
+                    }
+
                     options = null;
                 }
             }

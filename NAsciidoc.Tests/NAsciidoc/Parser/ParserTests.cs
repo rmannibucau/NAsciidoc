@@ -2177,6 +2177,76 @@ public class ParserTests
     }
 
     [Fact]
+    public void IncludeSections()
+    {
+        var body = new Parser().ParseBody(
+            new Reader(
+                """
+                == My title
+                                
+                include::foo.adoc[]
+                                
+                """.Replace("\r\n", "\n").Split('\n')
+            ),
+            new CustomContentResolver(
+                (reference, encoding) =>
+                    reference switch
+                    {
+                        "foo.adoc" => ["=== Sub 1", string.Empty, "3", string.Empty, "=== Sub 2", string.Empty, "4"],
+                        _ => null,
+                    }
+            )
+        );
+        Assert.Equivalent(
+            new List<IElement>
+            {
+                new Section(
+                    2,
+                    new Text(
+                        ImmutableList<Text.Styling>.Empty,
+                        "My title",
+                        ImmutableDictionary<string, string>.Empty
+                    ),
+                    [
+                        new Section(
+                            3, 
+                            new Text(
+                                ImmutableList<Text.Styling>.Empty,
+                                "Sub 1",
+                                ImmutableDictionary<string, string>.Empty
+                            ),
+                            [
+                                new Text(
+                                    ImmutableList<Text.Styling>.Empty,
+                                    "3",
+                                    ImmutableDictionary<string, string>.Empty
+                                )],
+                            ImmutableDictionary<string, string>.Empty
+                        ),
+                        new Section(
+                            3, 
+                            new Text(
+                                ImmutableList<Text.Styling>.Empty,
+                                "Sub 2",
+                                ImmutableDictionary<string, string>.Empty
+                            ),
+                            [
+                                new Text(
+                                    ImmutableList<Text.Styling>.Empty,
+                                    "4",
+                                    ImmutableDictionary<string, string>.Empty
+                                )],
+                            ImmutableDictionary<string, string>.Empty
+                        )
+                    ],
+                    ImmutableDictionary<string, string>.Empty
+                ),
+            },
+            body.Children
+        );
+    }
+
+    [Fact]
     public void IncludeAttributes()
     {
         var doc = new Parser().Parse(
