@@ -27,9 +27,6 @@ namespace NAsciidoc.Parser
             "mailto:",
         ];
 
-        [GeneratedRegex("\\{(?<name>[^ }]+)}")]
-        private static partial Regex AttributeRegex();
-
         [GeneratedRegex("^:(?<name>[^\\n\\t:]+):( +(?<value>.+))? *$")]
         private static partial Regex AttributeDefinitionRegex();
 
@@ -291,7 +288,11 @@ namespace NAsciidoc.Parser
                 ?? DoParseOptions(options, "", true);
         }
 
-        private string? Subs(string? value, IDictionary<string, string> opts, IDictionary<string, string>? attributes)
+        private string? Subs(
+            string? value,
+            IDictionary<string, string> opts,
+            IDictionary<string, string>? attributes
+        )
         {
             opts.TryGetValue("subs", out var subs);
             var result = value ?? "";
@@ -301,7 +302,12 @@ namespace NAsciidoc.Parser
             }
             if (subs.Contains("attributes") && !subs.Contains("-attributes"))
             {
-                result = EarlyAttributeReplacement(result, opts, attributes ?? ImmutableDictionary<string, string>.Empty);
+                result = EarlyAttributeReplacement(
+                    result,
+                    true,
+                    opts,
+                    attributes ?? ImmutableDictionary<string, string>.Empty
+                );
             }
             return result;
         }
@@ -493,14 +499,20 @@ namespace NAsciidoc.Parser
                     ),
                 ];
             }
+
+            var includeOpts = ParseOptions(content[(opts + 1)..end]);
+            var includeValue = content[(start + "include::".Length)..opts];
             var include = DoInclude(
                 new Macro(
                     "include",
-                    EarlyAttributeReplacement(
-                        content[(start + "include::".Length)..opts],
-                        currentAttributes ?? ImmutableDictionary<string, string>.Empty
-                    ),
-                    ParseOptions(content[(opts + 1)..end]),
+                    includeOpts.TryGetValue("subs", out var subs) && subs.Contains("-macro")
+                        ? includeValue
+                        : EarlyAttributeReplacement(
+                            includeValue,
+                            true,
+                            currentAttributes ?? ImmutableDictionary<string, string>.Empty
+                        ),
+                    includeOpts,
                     false
                 ),
                 resolver,
@@ -548,7 +560,10 @@ namespace NAsciidoc.Parser
             var actualOpts = options ?? ImmutableDictionary<string, string>.Empty;
             if (!text.Contains("include::"))
             {
-                return new PassthroughBlock(Subs(text, actualOpts, documentOptions) ?? "", actualOpts);
+                return new PassthroughBlock(
+                    Subs(text, actualOpts, documentOptions) ?? "",
+                    actualOpts
+                );
             }
 
             var filtered = string.Join(
@@ -572,7 +587,10 @@ namespace NAsciidoc.Parser
                         }
                     })
             );
-            return new PassthroughBlock(Subs(filtered, actualOpts, documentOptions) ?? "", actualOpts);
+            return new PassthroughBlock(
+                Subs(filtered, actualOpts, documentOptions) ?? "",
+                actualOpts
+            );
         }
 
         private IElement NewText(
@@ -653,7 +671,7 @@ namespace NAsciidoc.Parser
                 }
 
                 int end = new List<string> { " ", "\t" }
-                    .Select(s => content.IndexOf(s, next))
+                    .Select(s => content.IndexOf(s, next, StringComparison.Ordinal))
                     .Where(i => i > next)
                     .DefaultIfEmpty(content.Length)
                     .Min();
@@ -1141,7 +1159,7 @@ namespace NAsciidoc.Parser
                 foreach (
                     var it in ParseLine(
                         reader,
-                        EarlyAttributeReplacement(line, currentAttributes),
+                        EarlyAttributeReplacement(line, false, currentAttributes),
                         resolver,
                         currentAttributes,
                         supportComplexStructures
@@ -1883,7 +1901,7 @@ namespace NAsciidoc.Parser
                             {
                                 elements.Add(
                                     new Code(
-                                        content,
+                                        content.Replace("\\{", "{"), // quick and dirty unescaping of variables
                                         ImmutableList<CallOut>.Empty,
                                         ImmutableDictionary<string, string>.Empty,
                                         true
@@ -1902,7 +1920,7 @@ namespace NAsciidoc.Parser
                             && line[i + 1] == '<'
                         )
                         {
-                            int end = line.IndexOf(">>", i + 1);
+                            int end = line.IndexOf(">>", i + 1, StringComparison.Ordinal);
                             if (end > 0)
                             {
                                 if (start != i)
@@ -2073,7 +2091,12 @@ namespace NAsciidoc.Parser
             {
                 IDictionary<string, string> opts =
                     codeOptions ?? ImmutableDictionary<string, string>.Empty;
-                return new Code(Subs(code, opts, currentAttributes) ?? "", ImmutableList<CallOut>.Empty, opts, false);
+                return new Code(
+                    Subs(code, opts, currentAttributes) ?? "",
+                    ImmutableList<CallOut>.Empty,
+                    opts,
+                    false
+                );
             }
 
             var callOuts = new List<CallOut>(contentWithCallouts.CallOutReferences.Count);
@@ -2420,7 +2443,7 @@ namespace NAsciidoc.Parser
                     break;
                 }
 
-                var newValue = EarlyAttributeReplacement(next, attributes);
+                var newValue = EarlyAttributeReplacement(next, false, attributes);
                 if (newValue != next)
                 {
                     reader.SetPreviousValue(newValue);
@@ -2587,8 +2610,10 @@ namespace NAsciidoc.Parser
                             supportComplexStructures
                         )
                     );
-                    if (element is Paragraph { Options.Count: 0 } p &&
-                        p.Children.Any(it => it.Type() == IElement.ElementType.Section))
+                    if (
+                        element is Paragraph { Options.Count: 0 } p
+                        && p.Children.Any(it => it.Type() == IElement.ElementType.Section)
+                    )
                     {
                         elements.AddRange(p.Children);
                     }
@@ -2789,6 +2814,7 @@ namespace NAsciidoc.Parser
                             "include",
                             EarlyAttributeReplacement(
                                 line["include::".Length..optsStart],
+                                true,
                                 ImmutableDictionary<string, string>.Empty
                             ),
                             ParseOptions(line[(optsStart + 1)..line.LastIndexOf(']')]),
@@ -2916,20 +2942,20 @@ namespace NAsciidoc.Parser
                 "<=" => context =>
                 {
                     var attributes = attributeAccessor(context);
-                    return double.Parse(EarlyAttributeReplacement(leftOperand, attributes))
-                        <= double.Parse(EarlyAttributeReplacement(rightOperand, attributes));
+                    return double.Parse(EarlyAttributeReplacement(leftOperand, attributes, true))
+                        <= double.Parse(EarlyAttributeReplacement(rightOperand, attributes, true));
                 },
                 ">" => context =>
                 {
                     var attributes = attributeAccessor(context);
-                    return double.Parse(EarlyAttributeReplacement(leftOperand, attributes))
-                        > double.Parse(EarlyAttributeReplacement(rightOperand, attributes));
+                    return double.Parse(EarlyAttributeReplacement(leftOperand, attributes, true))
+                        > double.Parse(EarlyAttributeReplacement(rightOperand, attributes, true));
                 },
                 ">=" => context =>
                 {
                     var attributes = attributeAccessor(context);
-                    return double.Parse(EarlyAttributeReplacement(leftOperand, attributes))
-                        >= double.Parse(EarlyAttributeReplacement(rightOperand, attributes));
+                    return double.Parse(EarlyAttributeReplacement(leftOperand, attributes, true))
+                        >= double.Parse(EarlyAttributeReplacement(rightOperand, attributes, true));
                 },
                 _ => throw new InvalidOperationException($"Unknown operator '{operatorType}'"),
             };
@@ -2938,7 +2964,7 @@ namespace NAsciidoc.Parser
         private string StripQuotes(string strip)
         {
             return strip.StartsWith('\"') && strip.EndsWith('\"') && strip.Length > 1
-                ? strip[1..(strip.Length - 1)]
+                ? strip[1..^1]
                 : strip;
         }
 
@@ -2951,8 +2977,8 @@ namespace NAsciidoc.Parser
         {
             return test(
                 (
-                    EarlyAttributeReplacement(leftOperand, context),
-                    EarlyAttributeReplacement(rightOperand, context)
+                    EarlyAttributeReplacement(leftOperand, context, true),
+                    EarlyAttributeReplacement(rightOperand, context, true)
                 )
             );
         }
@@ -2966,55 +2992,109 @@ namespace NAsciidoc.Parser
         {
             return test(
                 (
-                    double.Parse(EarlyAttributeReplacement(leftOperand, context.Attribute)),
-                    double.Parse(EarlyAttributeReplacement(rightOperand, context.Attribute))
+                    double.Parse(EarlyAttributeReplacement(leftOperand, context.Attribute, true)),
+                    double.Parse(EarlyAttributeReplacement(rightOperand, context.Attribute, true))
                 )
             );
         }
 
         private string EarlyAttributeReplacement(
             string value,
+            bool unescape,
             params IDictionary<string, string>[] attributes
         )
         {
             return EarlyAttributeReplacement(
                 value,
-                k => attributes
-                    .Where(it => it.ContainsKey(k))
-                    .Select(it => it.TryGetValue(k, out var v) ? v : null)
-                    .FirstOrDefault()
+                k =>
+                    attributes
+                        .Where(it => it.ContainsKey(k))
+                        .Select(it => it.TryGetValue(k, out var v) ? v : null)
+                        .FirstOrDefault(),
+                unescape
             );
         }
 
-        private string EarlyAttributeReplacement(string value, Func<string, string?> attributes)
-        { // todo: handle escaping
+        private string EarlyAttributeReplacement(
+            string value,
+            Func<string, string?> attributes,
+            bool unescape
+        )
+        {
             if (!value.Contains('{'))
             {
                 return value;
             }
-            var keys = new HashSet<string>(1);
-            var matches = AttributeRegex().Matches(value);
-            if (matches is not null)
+
+            HashSet<string>? keys = null;
+            var from = 0;
+            do
             {
-                foreach (Match match in matches)
+                from = value.IndexOf('{', from);
+                if (from < 0)
                 {
-                    var name = match.Groups["name"].Value;
-                    if (attributes(name) != null || globalAttributes.ContainsKey(name))
-                    {
-                        keys.Add(name);
-                    }
+                    break;
                 }
+
+                var to = from + 1;
+                while (to < value.Length)
+                {
+                    if (value[to] == '}')
+                    {
+                        var name = value[(from + 1)..to];
+                        if (attributes(name) != null || globalAttributes.ContainsKey(name))
+                        {
+                            keys ??= new HashSet<string>(1);
+                            keys.Add(name);
+                        }
+                    }
+
+                    if (value[to] != '}' && value[to] != ' ')
+                    {
+                        to++;
+                        continue;
+                    }
+
+                    from = to;
+                    break;
+                }
+            } while (from > 0);
+
+            if (keys is null)
+            {
+                return value;
             }
+
             var result = value;
             foreach (var key in keys)
             {
                 var placeholder = '{' + key + '}';
-                var replacement = attributes(key);
-                result = result.Replace(
-                    placeholder,
-                    replacement
-                        ?? (globalAttributes.TryGetValue(key, out var gav) ? gav : placeholder)
-                );
+                var replacement =
+                    attributes(key)
+                    ?? (globalAttributes.TryGetValue(key, out var gav) ? gav : placeholder);
+
+                var start = 0;
+                while (start < result.Length)
+                {
+                    var next = result.IndexOf(placeholder, start, StringComparison.Ordinal);
+                    if (next < 0)
+                    {
+                        break;
+                    }
+
+                    if (next > 0 && result[next - 1] == '\\')
+                    {
+                        if (unescape)
+                        {
+                            result = result[..(next - 1)] + result[next..]; // drop escaping
+                        }
+                        start = next + 1;
+                        continue;
+                    }
+
+                    result = result[..next] + replacement + result[(next + placeholder.Length)..];
+                    start = next + placeholder.Length;
+                }
             }
             return result;
         }

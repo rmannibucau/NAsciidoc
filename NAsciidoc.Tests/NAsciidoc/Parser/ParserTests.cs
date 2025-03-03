@@ -48,20 +48,12 @@ public class ParserTests
             body.Children
         );
     }
-    
+
     [Fact]
     public void ParseLineBreakEmptyLine()
     {
-        var body = new Parser().ParseBody(
-            new Reader([" +"])
-        );
-        Assert.Equivalent(
-            new List<IElement>
-            {
-                new LineBreak(),
-            },
-            body.Children
-        );
+        var body = new Parser().ParseBody(new Reader([" +"]));
+        Assert.Equivalent(new List<IElement> { new LineBreak() }, body.Children);
     }
 
     // ensure we can use custom extension blocks implementable in a custom visitor decorator
@@ -1216,24 +1208,51 @@ public class ParserTests
         );
     }
 
-
     [Fact]
-    public void PassthroughAttributeSubsFromDoc()
+    public void PassthroughAttributeSubsNoMacro()
     {
-        var body = new Parser().Parse(
+        var body = new Parser(new Dictionary<string, string> { { "foo-version", "1" } }).ParseBody(
             new Reader(
                 """
-                = Title
-                :foo-version: 1
-
-                [subs=attributes]
+                [subs="-macro"]
                 ++++
                 <script defer src="/js/test.js?v={foo-version}"></script>
                 ++++
                 """.Replace("\r\n", "\n").Split('\n')
             ),
             null
-        ).Body;
+        );
+        Assert.Equivalent(
+            new List<IElement>
+            {
+                new PassthroughBlock(
+                    "<script defer src=\"/js/test.js?v={foo-version}\"></script>",
+                    new Dictionary<string, string> { { "subs", "-macro" } }
+                ),
+            },
+            body.Children
+        );
+    }
+
+    [Fact]
+    public void PassthroughAttributeSubsFromDoc()
+    {
+        var body = new Parser()
+            .Parse(
+                new Reader(
+                    """
+                    = Title
+                    :foo-version: 1
+
+                    [subs=attributes]
+                    ++++
+                    <script defer src="/js/test.js?v={foo-version}"></script>
+                    ++++
+                    """.Replace("\r\n", "\n").Split('\n')
+                ),
+                null
+            )
+            .Body;
         Assert.Equivalent(
             new List<IElement>
             {
@@ -2192,7 +2211,16 @@ public class ParserTests
                 (reference, encoding) =>
                     reference switch
                     {
-                        "foo.adoc" => ["=== Sub 1", string.Empty, "3", string.Empty, "=== Sub 2", string.Empty, "4"],
+                        "foo.adoc" =>
+                        [
+                            "=== Sub 1",
+                            string.Empty,
+                            "3",
+                            string.Empty,
+                            "=== Sub 2",
+                            string.Empty,
+                            "4",
+                        ],
                         _ => null,
                     }
             )
@@ -2209,7 +2237,7 @@ public class ParserTests
                     ),
                     [
                         new Section(
-                            3, 
+                            3,
                             new Text(
                                 ImmutableList<Text.Styling>.Empty,
                                 "Sub 1",
@@ -2220,11 +2248,12 @@ public class ParserTests
                                     ImmutableList<Text.Styling>.Empty,
                                     "3",
                                     ImmutableDictionary<string, string>.Empty
-                                )],
+                                ),
+                            ],
                             ImmutableDictionary<string, string>.Empty
                         ),
                         new Section(
-                            3, 
+                            3,
                             new Text(
                                 ImmutableList<Text.Styling>.Empty,
                                 "Sub 2",
@@ -2235,9 +2264,10 @@ public class ParserTests
                                     ImmutableList<Text.Styling>.Empty,
                                     "4",
                                     ImmutableDictionary<string, string>.Empty
-                                )],
+                                ),
+                            ],
                             ImmutableDictionary<string, string>.Empty
-                        )
+                        ),
                     ],
                     ImmutableDictionary<string, string>.Empty
                 ),

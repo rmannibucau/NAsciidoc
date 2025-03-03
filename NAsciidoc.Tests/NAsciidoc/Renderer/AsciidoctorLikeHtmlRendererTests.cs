@@ -5,6 +5,33 @@ namespace NAsciidoc.Renderer;
 public class AsciidoctorLikeHtmlRendererTests
 {
     [Fact]
+    public void UnescapeVariableInInlineCode()
+    {
+        AssertRenderingContent(
+            """
+            TIP: `partialsdir` variable is preconfigured and targets `_partials` directory. Using `\{partialsdir}/xxx.partial.adoc[]` is more robust and is preferred.
+            """,
+            """
+            <div class="admonitionblock tip">
+              <table>
+                <tbody>
+                 <tr>
+                  <td class="icon">
+                 <div class="title">TIP</div>
+                   </td>
+                  <td class="content">
+             <div class="paragraph">
+            <code>partialsdir</code> variable is preconfigured and targets <code>_partials</code> directory. Using <code>{partialsdir}/xxx.partial.adoc[]</code> is more robust and is preferred. </div>
+                </td>
+               </tr>
+                  </tbody>
+              </table>
+             </div>
+            """
+        );
+    }
+
+    [Fact]
     public void Ascii2svg()
     {
         AssertRenderingContent(
@@ -1018,14 +1045,21 @@ Site source base directory.
 
     private void AssertRenderingContent(string adoc, string html, string? work = null)
     {
-        var doc = new Parser.Parser().ParseBody(
+        var globalAttributes = new Dictionary<string, string>
+        {
+            { "partialsdir", "path/_partials" },
+        };
+        var doc = new Parser.Parser(globalAttributes).ParseBody(
             new Reader(adoc.Replace("\r\n", "\n").Split('\n')),
             new LocalContentResolver(work ?? "target/missing")
         );
         var renderer = new AsciidoctorLikeHtmlRenderer(
             new AsciidoctorLikeHtmlRenderer.Configuration
             {
-                Attributes = new Dictionary<string, string> { { "noheader", "true" } },
+                Attributes = new Dictionary<string, string>(globalAttributes)
+                {
+                    { "noheader", "true" },
+                },
             }
         );
         renderer.VisitBody(doc);
