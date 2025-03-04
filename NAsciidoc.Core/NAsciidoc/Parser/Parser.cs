@@ -923,9 +923,33 @@ namespace NAsciidoc.Parser
             var buffer = new List<string>();
             buffer.Add(line[(Enum.GetName(level.Value)!.Length + 1)..].TrimStart());
             string? next;
-            while ((next = reader.NextLine()) != null && !string.IsNullOrWhiteSpace(next))
+            string? needed = null;
+            while (
+                (next = reader.NextLine()) != null
+                && (
+                    (
+                        !DescriptionListPrefix().Match(next).Success
+                        && !string.IsNullOrWhiteSpace(next)
+                    )
+                    || needed != null
+                )
+            )
             {
+                if (next.Trim() == "+")
+                {
+                    buffer.Add("");
+                    continue;
+                }
+
                 buffer.Add(next);
+                if (needed == next)
+                {
+                    needed = null;
+                }
+                else if (IsBlock(next))
+                {
+                    needed = next;
+                }
             }
             if (next != null)
             {
