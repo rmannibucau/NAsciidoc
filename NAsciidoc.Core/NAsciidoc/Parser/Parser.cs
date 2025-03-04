@@ -2234,36 +2234,58 @@ namespace NAsciidoc.Parser
                 ? cols!
                     .Trim()
                     .Split(',')
-                    .Select(it => it.Trim())
+                    .SelectMany(it =>
+                    {
+                        var value = it.Trim();
+                        var idx = 0;
+                        while (value.Length > idx && char.IsDigit(value[idx++]))
+                        { /*no-op*/
+                        }
+
+                        if (value.Length > idx && idx > 1 && value[idx - 1] == '*')
+                        {
+                            try
+                            {
+                                return Enumerable
+                                    .Range(0, int.Parse(value[..(idx - 1)]))
+                                    .Select(_ => value);
+                            }
+                            catch
+                            { /*no-op*/
+                            }
+                        }
+
+                        return [it];
+                    })
                     .Where(it => !string.IsNullOrWhiteSpace(it))
                     .Select(i =>
                     {
-                        IDictionary<string, string> options = ImmutableDictionary<
+                        IDictionary<string, string> iOpts = ImmutableDictionary<
                             string,
                             string
                         >.Empty;
                         if (i.Contains('<'))
                         {
-                            options = new Dictionary<string, string>
+                            iOpts = new Dictionary<string, string>
                             {
                                 { "role", "tableblock halign-left valign-top" },
                             };
                         }
                         if (i.Contains('>'))
                         {
-                            options = new Dictionary<string, string>
+                            iOpts = new Dictionary<string, string>
                             {
                                 { "role", "tableblock halign-right valign-top" },
                             };
                         }
                         if (i.Contains('^'))
                         {
-                            options = new Dictionary<string, string>
+                            iOpts = new Dictionary<string, string>
                             {
                                 { "role", "tableblock halign-center valign-top" },
                             };
                         }
-                        return ToTableCellFormatter(i, resolver, currentAttributes, options);
+                        return ToTableCellFormatter(i, resolver, currentAttributes, iOpts);
                     })
                     .ToList() ?? []
                 : [];
@@ -2274,14 +2296,17 @@ namespace NAsciidoc.Parser
             {
                 next = next.Trim();
                 var cells = new List<IElement>();
-                if (next.IndexOf('|', 2) > 0) // single line row
+                if (next.Length > 1 && next.IndexOf('|', 2) > 0) // single line row
                 {
+                    // todo: https://docs.asciidoctor.org/asciidoc/latest/tables/format-cell-content/
+                    //       for now it is only at cols attribute level
+
                     int cellIdx = 0;
                     int last = 1; // line starts with '|'
                     int nextSep = next.IndexOf('|', last);
                     while (nextSep > 0)
                     {
-                        var content = next[last..nextSep];
+                        var content = next[last..nextSep].Trim();
                         cells.Add(
                             cellParser.Count > cellIdx
                                 ? cellParser[cellIdx++]([content])
@@ -2305,7 +2330,7 @@ namespace NAsciidoc.Parser
                     int cellIdx = 0;
                     do
                     {
-                        var content = new List<string> { next![1..] };
+                        var content = new List<string> { next[1..].Trim() };
                         while (
                             (next = reader.NextLine()) != null
                             && !next.StartsWith('|')

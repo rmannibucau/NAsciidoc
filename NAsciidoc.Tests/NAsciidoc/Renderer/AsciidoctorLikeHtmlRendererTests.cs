@@ -1,4 +1,5 @@
 using NAsciidoc.Parser;
+using Xunit.Sdk;
 
 namespace NAsciidoc.Renderer;
 
@@ -567,7 +568,7 @@ Site source base directory.
             |===
             """,
             """
-             <table class="tableblock frame-all grid-all stretch">
+            <table class="tableblock frame-all grid-all stretch">
               <colgroup>
                <col width="50%">
                <col width="50%">
@@ -575,7 +576,7 @@ Site source base directory.
               <thead>
                <tr>
                 <th>
-            Cell in column 1, header row     </th>
+            Cell in column 1, header row    </th>
                 <th>
             Cell in column 2, header row    </th>
                </tr>
@@ -625,7 +626,7 @@ Site source base directory.
             |===
             """,
             """
-             <table class="tableblock frame-all grid-all stretch">
+            <table class="tableblock frame-all grid-all stretch">
               <colgroup>
                <col width="50%">
                <col width="50%">
@@ -633,7 +634,7 @@ Site source base directory.
               <thead>
                <tr>
                 <th>
-            Cell in column 1, header row     </th>
+            Cell in column 1, header row    </th>
                 <th>
             Cell in column 2, header row    </th>
                </tr>
@@ -664,6 +665,53 @@ Site source base directory.
     }
 
     [Fact]
+    public void TableWithMultilinePassthrough()
+    {
+        AssertRenderingContent(
+            """
+            [cols="2*a", options="header"]
+            .My Table Label
+            |===    
+            | Key
+            | Value
+
+            |
+            ++++
+            <img src="https://rmannibucau.github.io/NAsciidoc/images/avatar.jpg"/>
+            ++++
+            | link:https://rmannibucau.github.io/NAsciidoc/images/avatar.jpg?q=simple&amp;Real=y[My avatar]
+            |===
+            """,
+            """
+            <table class="tableblock frame-all grid-all stretch">
+              <caption class="title">My Table Label</caption>
+              <colgroup>
+               <col width="50%">
+               <col width="50%">
+              </colgroup>
+              <tbody>
+               <tr>
+                <td>
+            Key    </td>
+                <td>
+            Value    </td>
+               </tr>
+               <tr>
+                <td>
+
+            <img src="https://rmannibucau.github.io/NAsciidoc/images/avatar.jpg"/>
+                </td>
+                <td>
+             <a href="https://rmannibucau.github.io/NAsciidoc/images/avatar.jpg?q=simple&amp;Real=y">My avatar</a>
+                </td>
+               </tr>
+              </tbody>
+             </table>
+            """
+        );
+    }
+
+    [Fact]
     public void TableWithInlineAdoc()
     {
         AssertRenderingContent(
@@ -684,7 +732,7 @@ Site source base directory.
               <tbody>
                <tr>
                 <td>
-            Cell in column 1, header row     </td>
+            Cell in column 1, header row    </td>
                 <td>
             Cell in column 2, header row    </td>
                </tr>
