@@ -864,7 +864,7 @@ public class AsciidoctorLikeHtmlRenderer : Visitor<string>
         {
             var firstRow = element.Elements[0];
             var cols = element.Options.TryGetValue("cols", out var colsValue)
-                ? colsValue.Split(',').Select(ExtractNumbers).ToImmutableList()
+                ? colsValue.Split(',').SelectMany(ExtractNumbers).ToImmutableList()
                 : [];
 
             builder.Append("  <colgroup>\n");
@@ -1417,9 +1417,9 @@ public class AsciidoctorLikeHtmlRenderer : Visitor<string>
         }
     }
 
-    private int ExtractNumbers(string col)
+    private int[] ExtractNumbers(string col)
     {
-        int i = 0;
+        var i = 0;
         while (col.Length > i && char.IsDigit(col[i]))
         {
             i++;
@@ -1428,13 +1428,17 @@ public class AsciidoctorLikeHtmlRenderer : Visitor<string>
         {
             if (i == 0)
             {
-                return 1;
+                return [1];
             }
-            return int.Parse(col[..i]);
+
+            var value = int.Parse(col[..i]);
+            return col.Length > i && col[i] == '*'
+                ? [.. Enumerable.Range(0, value).Select(_ => 1)]
+                : [value];
         }
         catch (FormatException)
         {
-            return 1;
+            return [1];
         }
     }
 

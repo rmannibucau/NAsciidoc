@@ -32,6 +32,32 @@ public class AsciidoctorLikeHtmlRendererTests
     }
 
     [Fact]
+    public void NoMacroInMultilinesCode()
+    {
+        AssertRenderingContent(
+            """
+            [source,adoc,subs="-macro"]
+            ----
+            = Demo
+            :foo: bar
+            ...
+            include꞉꞉{partialsdir}/whatever.adoc[]
+            ----
+            """,
+            """
+            <div class="listingblock">
+             <div class="content">
+             <pre class="highlightjs highlight"><code class="language-adoc hljs" data-lang="adoc">= Demo
+            :foo: bar
+            ...
+            include꞉꞉{partialsdir}/whatever.adoc[]</code></pre>
+             </div>
+             </div>
+            """
+        );
+    }
+
+    [Fact]
     public void Ascii2svg()
     {
         AssertRenderingContent(
@@ -527,6 +553,64 @@ Site source base directory.
         AssertRenderingContent(
             """
             [cols="1,1",opts="header"]
+            |===
+            |Cell in column 1, header row |Cell in column 2, header row 
+                            
+            |Cell in column 1, row 2
+            |Cell in column 2, row 2
+                            
+            |Cell in column 1, row 3
+            |Cell in column 2, row 3
+                            
+            |Cell in column 1, row 4
+            |Cell in column 2, row 4
+            |===
+            """,
+            """
+             <table class="tableblock frame-all grid-all stretch">
+              <colgroup>
+               <col width="50%">
+               <col width="50%">
+              </colgroup>
+              <thead>
+               <tr>
+                <th>
+            Cell in column 1, header row     </th>
+                <th>
+            Cell in column 2, header row    </th>
+               </tr>
+              </thead>
+              <tbody>
+               <tr>
+                <td>
+            Cell in column 1, row 2    </td>
+                <td>
+            Cell in column 2, row 2    </td>
+               </tr>
+               <tr>
+                <td>
+            Cell in column 1, row 3    </td>
+                <td>
+            Cell in column 2, row 3    </td>
+               </tr>
+               <tr>
+                <td>
+            Cell in column 1, row 4    </td>
+                <td>
+            Cell in column 2, row 4    </td>
+               </tr>
+              </tbody>
+             </table>
+            """
+        );
+    }
+
+    [Fact]
+    public void TableWithColsWildcard()
+    {
+        AssertRenderingContent(
+            """
+            [cols="2*",opts="header"]
             |===
             |Cell in column 1, header row |Cell in column 2, header row 
                             
