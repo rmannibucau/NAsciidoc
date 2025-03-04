@@ -1,5 +1,4 @@
 using NAsciidoc.Parser;
-using Xunit.Sdk;
 
 namespace NAsciidoc.Renderer;
 
