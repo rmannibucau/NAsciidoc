@@ -701,39 +701,39 @@ namespace NAsciidoc.Parser
             var first = element.Children[0];
             if (first is UnOrderedList l)
             {
-                return new UnOrderedList(l.Children, Merge(l.Options, element.Options));
+                return l with { Options = Merge(l.Options, element.Options) };
             }
             if (first is OrderedList ol)
             {
-                return new OrderedList(ol.Children, Merge(ol.Options, element.Options));
+                return ol with { Options = Merge(ol.Options, element.Options) };
             }
             if (first is Section s)
             {
-                return new Section(s.Level, s.Title, s.Children, Merge(s.Options, element.Options));
+                return s with { Options = Merge(s.Options, element.Options) };
             }
             if (first is Text t)
             {
-                return new Text(t.Style, t.Value, Merge(t.Options, element.Options));
+                return t with { Options = Merge(t.Options, element.Options) };
             }
             if (first is Code c)
             {
-                return new Code(c.Value, c.CallOuts, Merge(c.Options, element.Options), c.Inline);
+                return c with { Options = Merge(c.Options, element.Options) };
             }
             if (first is Link lk)
             {
-                return new Link(lk.Url, lk.Label, Merge(lk.Options, element.Options));
+                return lk with { Options = Merge(lk.Options, element.Options) };
             }
             if (first is Macro m)
             {
-                return new Macro(m.Name, m.Label, Merge(m.Options, element.Options), m.Inline);
+                return m with { Options = Merge(m.Options, element.Options) };
             }
             if (first is Quote q)
             {
-                return new Quote(q.Children, Merge(q.Options, element.Options));
+                return q with { Options = Merge(q.Options, element.Options) };
             }
             if (first is OpenBlock b)
             {
-                return new OpenBlock(b.Children, Merge(b.Options, element.Options));
+                return b with { Options = Merge(b.Options, element.Options) };
             }
             if (first is PageBreak p)
             {
@@ -745,15 +745,11 @@ namespace NAsciidoc.Parser
             }
             if (first is DescriptionList d && element.Options.Count == 0)
             {
-                return new DescriptionList(d.Children, Merge(d.Options, element.Options));
+                return d with { Options = Merge(d.Options, element.Options) };
             }
             if (first is ConditionalBlock cb)
             {
-                return new ConditionalBlock(
-                    cb.Evaluator,
-                    cb.Children,
-                    Merge(cb.Options, element.Options)
-                );
+                return cb with { Options = Merge(cb.Options, element.Options) };
             }
             if (first is Admonition a && element.Options.Count == 0)
             {
@@ -920,8 +916,10 @@ namespace NAsciidoc.Parser
             {
                 return null;
             }
-            var buffer = new List<string>();
-            buffer.Add(line[(Enum.GetName(level.Value)!.Length + 1)..].TrimStart());
+            var buffer = new List<string>
+            {
+                line[(Enum.GetName(level.Value)!.Length + 1)..].TrimStart(),
+            };
             string? next;
             string? needed = null;
             while (
@@ -955,12 +953,39 @@ namespace NAsciidoc.Parser
             {
                 reader.Rewind();
             }
-            return new Admonition(
-                level.Value,
-                UnwrapElementIfPossible(
-                    ParseParagraph(new Reader(buffer), null, resolver, currentAttributes, true)
-                )
+
+            var content = DoParse(
+                new Reader(buffer),
+                _ => true,
+                resolver,
+                currentAttributes,
+                true,
+                false
             );
+            var unwrapped =
+                content.Count == 1 && content[0].Type() == IElement.ElementType.Paragraph
+                    ? UnwrapElementIfPossible((Paragraph)content[0])
+                    : UnwrapElementIfPossible(
+                        new Paragraph(
+                            content,
+                            new Dictionary<string, string>
+                            {
+                                ["__internal-container__"] = string.Empty,
+                            }
+                        )
+                    );
+
+            // for unwrapped texts, avoid an unwanted wrapping <p>
+            if (
+                unwrapped.Type() == IElement.ElementType.Text
+                && unwrapped is Text t
+                && t.Options.ContainsKey("__internal-container__")
+            )
+            {
+                t.Options.Remove("__internal-container__");
+            }
+
+            return new Admonition(level.Value, unwrapped);
         }
 
         private bool IsBlock(string strippedLine)
@@ -1079,7 +1104,7 @@ namespace NAsciidoc.Parser
 
                     var elements = DoParse(
                         new Reader(buffer.ToString().Split("\n")),
-                        l => true,
+                        _ => true,
                         resolver,
                         currentAttributes,
                         true,
@@ -1169,13 +1194,20 @@ namespace NAsciidoc.Parser
             IContentResolver? resolver,
             IDictionary<string, string> currentAttributes,
             bool supportComplexStructures /* title case for ex */
+            ,
+            bool stopOnEmptyLines
         )
         {
             var elements = new List<IElement>();
-            string? line;
-            while ((line = reader.NextLine()) != null && !string.IsNullOrWhiteSpace(line))
+            while (
+                reader.NextLine() is { } line
+                && (!stopOnEmptyLines || !string.IsNullOrWhiteSpace(line))
+            )
             {
-                if (line.StartsWith("=") || (line.StartsWith("[") && line.EndsWith("]")))
+                if (
+                    stopOnEmptyLines
+                    && (line.StartsWith('=') || (line.StartsWith('[') && line.EndsWith(']')))
+                )
                 {
                     reader.Rewind();
                     break;
@@ -1193,11 +1225,7 @@ namespace NAsciidoc.Parser
                     elements.Add(it);
                 }
             }
-            if (
-                elements.Count == 1
-                && elements[0] is Paragraph p
-                && (options == null || options.Count == 0)
-            )
+            if (elements is [Paragraph p] && (options == null || options.Count == 0))
             {
                 return p;
             }
@@ -1759,7 +1787,6 @@ namespace NAsciidoc.Parser
                                             elements.Add(macro);
                                             break;
                                     }
-                                    ;
                                 }
                                 else
                                 {
@@ -1892,6 +1919,7 @@ namespace NAsciidoc.Parser
                                         ImmutableDictionary<string, string>.Empty,
                                         resolver,
                                         ImmutableDictionary<string, string>.Empty,
+                                        false,
                                         false
                                     )
                                 );
@@ -2656,7 +2684,8 @@ namespace NAsciidoc.Parser
                             options,
                             resolver,
                             attributes,
-                            supportComplexStructures
+                            supportComplexStructures,
+                            true
                         )
                     );
                     if (

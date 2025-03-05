@@ -95,8 +95,7 @@ public class AsciidoctorLikeHtmlRenderer : Visitor<string>
     {
         state.lastElement.Add(element);
         if (
-            !state.SawPreamble
-            && state.lastElement.Count >= 2
+            state is { SawPreamble: false, lastElement.Count: >= 2 }
             && element.Type() != IElement.ElementType.Text
             && element.Type() != IElement.ElementType.Paragraph
         )
@@ -295,6 +294,12 @@ public class AsciidoctorLikeHtmlRenderer : Visitor<string>
                     element,
                     () =>
                     {
+                        if (element.Options.ContainsKey("__internal-container__"))
+                        {
+                            base.VisitParagraph(element);
+                            return;
+                        }
+
                         if (!state.Nowrap)
                         {
                             builder.Append(" <div");
@@ -306,15 +311,14 @@ public class AsciidoctorLikeHtmlRenderer : Visitor<string>
                         }
 
                         bool addP =
-                            !state.Nowrap
-                            && state.SawPreamble
+                            state is { Nowrap: false, SawPreamble: true }
                             && element.Children.All(e =>
                                 e.Type() == IElement.ElementType.Text
                                 || e.Type() == IElement.ElementType.Attribute
                                 || e.Type() == IElement.ElementType.Link
                                 || e.Type() == IElement.ElementType.Anchor
-                                || (e is Macro m && m.Inline)
-                                || (e is Code c && c.Inline)
+                                || e is Macro { Inline: true }
+                                || e is Code { Inline: true }
                             );
                         if (addP)
                         {
@@ -642,13 +646,11 @@ public class AsciidoctorLikeHtmlRenderer : Visitor<string>
                 }
 
                 bool isParagraph =
-                    !state.Nowrap
-                    && !state.InCallOut
+                    state is { Nowrap: false, InCallOut: false }
                     && useWrappers
                     && (
                         state.lastElement.Count <= 1
-                        || state.lastElement[state.lastElement.Count - 2].Type()
-                            == IElement.ElementType.Section
+                        || state.lastElement[^2].Type() == IElement.ElementType.Section
                     );
                 if (isParagraph)
                 {
@@ -665,15 +667,14 @@ public class AsciidoctorLikeHtmlRenderer : Visitor<string>
                 bool parentNeedsP =
                     state.lastElement.Count > 1
                     && (
-                        IsList(state.lastElement[state.lastElement.Count - 2].Type())
+                        IsList(state.lastElement[^2].Type())
                         || ( // if parent is a paragraph and it has homogeneous chidlren, ensure texts are wrapped in <p>
-                            state.lastElement[^2] is Paragraph p
-                            && p.Children.Count > 1
+                            state.lastElement[^2] is Paragraph { Children.Count: > 1 } p
                             && p.Children.Any(it => it.Type() == IElement.ElementType.Paragraph)
                             && p.Children.Any(it =>
                                 it.Type() == IElement.ElementType.Text
                                 || it.Type() == IElement.ElementType.Link
-                                || (it is Code c && c.Inline)
+                                || it is Code { Inline: true }
                                 || (it is Macro m && m.Inline)
                             )
                         )

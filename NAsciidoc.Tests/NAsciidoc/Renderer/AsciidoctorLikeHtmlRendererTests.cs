@@ -5,6 +5,42 @@ namespace NAsciidoc.Renderer;
 public class AsciidoctorLikeHtmlRendererTests
 {
     [Fact]
+    public void AdmonitionWithContinuation()
+    {
+        AssertRenderingContent(
+            """
+            IMPORTANT: this
+            is:
+            +
+            [source,plaintext]
+            ----
+            some code
+            ----
+            """,
+            """
+            <div class="admonitionblock important">
+              <table>
+                <tbody>
+                 <tr>
+                  <td class="icon">
+                 <div class="title">IMPORTANT</div>
+                   </td>
+                  <td class="content">
+            this is: <div class="listingblock">
+             <div class="content">
+             <pre class="highlightjs highlight"><code class="language-plaintext hljs" data-lang="plaintext">some code</code></pre>
+             </div>
+             </div>
+                </td>
+               </tr>
+                  </tbody>
+              </table>
+             </div>
+            """
+        );
+    }
+
+    [Fact]
     public void Toc()
     {
         AssertRendering(
@@ -1264,7 +1300,10 @@ public class AsciidoctorLikeHtmlRendererTests
     {
         var globalAttributes = new Dictionary<string, string>
         {
-            { "partialsdir", "path/_partials" },
+            {
+                "partialsdir",
+                "/opt/rmannibucau/dev/rmannibucau_OrangeLogic.Testing.Tools/Documentation/src/_content/_partials"
+            },
         };
         var doc = new Parser.Parser(globalAttributes).ParseBody(
             new Reader(adoc.Replace("\r\n", "\n").Split('\n')),
