@@ -1509,18 +1509,15 @@ public class AsciidoctorLikeHtmlRenderer : Visitor<string>
             .Append(" <div id=\"toc\" class=\"")
             .Append(Attr("toc-class", "toc-class", "toc", state.Document.Header.Attributes))
             .Append("\">\n");
-        if (
-            state.Document.Header.Title != null
-            && !string.IsNullOrWhiteSpace(state.Document.Header.Title)
-        )
+        if (!string.IsNullOrWhiteSpace(state.Document.Header.Title))
         {
             builder
                 .Append("  <div id=\"toctitle\">")
-                .Append(state.Document.Header.ToString())
+                .Append(state.Document.Header.Title)
                 .Append("</div>\n");
         }
 
-        ((Visitor<StringBuilder>)new TocVisitor(toclevels, 1)).VisitBody(body);
+        new TocVisitor(toclevels, 1).VisitBody(body);
         builder.Append(new TocVisitor(toclevels, 1).Result());
         builder.Append(" </div>\n");
     }
