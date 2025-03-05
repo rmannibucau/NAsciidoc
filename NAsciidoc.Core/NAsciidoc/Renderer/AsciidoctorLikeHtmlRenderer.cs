@@ -707,6 +707,12 @@ public class AsciidoctorLikeHtmlRenderer : Visitor<string>
                     WriteCommonAttributes(element.Options, null);
                     builder.Append(">\n");
                 }
+
+                if (element.Opts().ContainsKey("checkbox"))
+                {
+                    builder.Append(RenderCheckListInput(element.Opts().ContainsKey("checked")));
+                }
+
                 var styleTags = element
                     .Style.Select(s =>
                         s switch
@@ -1482,22 +1488,24 @@ public class AsciidoctorLikeHtmlRenderer : Visitor<string>
         foreach (var elt in element)
         {
             builder.Append("  <li>\n");
-            if (checkList)
+            if (
+                checkList
+                && elt.Opts().ContainsKey("checkbox")
+                && elt.Type() != IElement.ElementType.Text /* to wrap as in asciidoctor we do it later */
+            )
             {
-                if (elt.Opts().ContainsKey("checkbox"))
-                {
-                    // todo: support more than fontawesome?
-                    builder.Append(
-                        elt.Opts().ContainsKey("checked")
-                            ? "<i class=\"fa fa-check-square-o\"></i> "
-                            : "<i class=\"fa fa-square-o\"></i> "
-                    );
-                }
+                builder.Append(RenderCheckListInput(elt.Opts().ContainsKey("checked")));
             }
             VisitElement(elt);
             builder.Append("  </li>\n");
         }
     }
+
+    // todo: support more than fontawesome?
+    protected virtual string RenderCheckListInput(bool checkedInput) =>
+        checkedInput
+            ? "<i class=\"fa fa-check-square-o\"></i> "
+            : "<i class=\"fa fa-square-o\"></i> ";
 
     protected bool IsList(IElement.ElementType type) =>
         type is IElement.ElementType.UnorderedList or IElement.ElementType.OrderedList;

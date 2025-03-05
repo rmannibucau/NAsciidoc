@@ -18,18 +18,18 @@ public class AsciidoctorLikeHtmlRendererTests
             <div class="ulist checklist">
              <ul class="checklist">
               <li>
-            <i class="fa fa-check-square-o"></i>  <p>
-            checked
+             <p>
+            <i class="fa fa-check-square-o"></i> checked
              </p>
               </li>
               <li>
-            <i class="fa fa-check-square-o"></i>  <p>
-            also checked
+             <p>
+            <i class="fa fa-check-square-o"></i> also checked
              </p>
               </li>
               <li>
-            <i class="fa fa-square-o"></i>  <p>
-            not checked
+             <p>
+            <i class="fa fa-square-o"></i> not checked
              </p>
               </li>
               <li>
