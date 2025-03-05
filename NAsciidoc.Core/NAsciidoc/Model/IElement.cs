@@ -11,6 +11,8 @@ namespace NAsciidoc.Model
     {
         ElementType Type();
 
+        IDictionary<string, string> Opts();
+
         public enum ElementType
         {
             // PREAMBLE, // not really supported/needed, if needed it can be detected by checking the paragraphs after first title and before next subtitle

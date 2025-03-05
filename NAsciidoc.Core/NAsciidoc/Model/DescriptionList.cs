@@ -5,8 +5,7 @@ public record DescriptionList(
     IDictionary<string, string> Options
 ) : IElement
 {
-    public IElement.ElementType Type()
-    {
-        return IElement.ElementType.DescriptionList;
-    }
+    public IElement.ElementType Type() => IElement.ElementType.DescriptionList;
+
+    public IDictionary<string, string> Opts() => Options;
 }

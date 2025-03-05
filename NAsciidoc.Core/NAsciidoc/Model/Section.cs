@@ -7,8 +7,7 @@ public record Section(
     IDictionary<string, string> Options
 ) : IElement
 {
-    public IElement.ElementType Type()
-    {
-        return IElement.ElementType.Section;
-    }
+    public IElement.ElementType Type() => IElement.ElementType.Section;
+
+    public IDictionary<string, string> Opts() => Options;
 }

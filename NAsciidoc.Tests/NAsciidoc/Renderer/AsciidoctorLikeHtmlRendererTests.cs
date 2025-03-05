@@ -5,6 +5,45 @@ namespace NAsciidoc.Renderer;
 public class AsciidoctorLikeHtmlRendererTests
 {
     [Fact]
+    public void CheckList()
+    {
+        AssertRenderingContent(
+            """
+            * [*] checked
+            * [x] also checked
+            * [ ] not checked
+            * normal list item
+            """,
+            """
+            <div class="ulist checklist">
+             <ul class="checklist">
+              <li>
+            <i class="fa fa-check-square-o"></i>  <p>
+            checked
+             </p>
+              </li>
+              <li>
+            <i class="fa fa-check-square-o"></i>  <p>
+            also checked
+             </p>
+              </li>
+              <li>
+            <i class="fa fa-square-o"></i>  <p>
+            not checked
+             </p>
+              </li>
+              <li>
+             <p>
+            normal list item
+             </p>
+              </li>
+             </ul>
+             </div>
+            """
+        );
+    }
+
+    [Fact]
     public void AdmonitionWithContinuation()
     {
         AssertRenderingContent(

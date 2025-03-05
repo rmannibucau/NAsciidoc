@@ -7,8 +7,7 @@ public record Code(
     bool Inline
 ) : IElement
 {
-    public IElement.ElementType Type()
-    {
-        return IElement.ElementType.Code;
-    }
+    public IElement.ElementType Type() => IElement.ElementType.Code;
+
+    public IDictionary<string, string> Opts() => Options;
 }

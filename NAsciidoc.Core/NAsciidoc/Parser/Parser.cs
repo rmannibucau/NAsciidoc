@@ -759,6 +759,38 @@ namespace NAsciidoc.Parser
             return element;
         }
 
+        private IElement InjectOptions(
+            IElement element,
+            IDictionary<string, string>? elementOptions
+        )
+        {
+            if (elementOptions is null)
+            {
+                return element;
+            }
+
+            return element switch
+            {
+                Paragraph pg => pg with { Options = Merge(pg.Options, elementOptions) },
+                UnOrderedList l => l with { Options = Merge(l.Options, elementOptions) },
+                OrderedList ol => ol with { Options = Merge(ol.Options, elementOptions) },
+                Section s => s with { Options = Merge(s.Options, elementOptions) },
+                Text t => t with { Options = Merge(t.Options, elementOptions) },
+                Code c => c with { Options = Merge(c.Options, elementOptions) },
+                Link lk => lk with { Options = Merge(lk.Options, elementOptions) },
+                Macro m => m with { Options = Merge(m.Options, elementOptions) },
+                Quote q => q with { Options = Merge(q.Options, elementOptions) },
+                OpenBlock b => b with { Options = Merge(b.Options, elementOptions) },
+                PageBreak p => new PageBreak(Merge(p.Options, elementOptions)),
+                DescriptionList d when elementOptions.Count == 0 => d with
+                {
+                    Options = Merge(d.Options, elementOptions),
+                },
+                ConditionalBlock cb => cb with { Options = Merge(cb.Options, elementOptions) },
+                _ => element,
+            };
+        }
+
         private IDictionary<string, string> RemoveEmptyKey(IDictionary<string, string> options)
         {
             return options.Where(it => !string.IsNullOrWhiteSpace(it.Key)).ToImmutableDictionary();
@@ -1102,8 +1134,38 @@ namespace NAsciidoc.Parser
                     buffer.Clear();
                     ReadContinuation(reader, prefix, regex, buffer, nextStripped);
 
+                    var text = buffer.ToString().TrimStart();
+                    IDictionary<string, string>? elementOptions = null;
+                    if (text.StartsWith("[ ] "))
+                    {
+                        elementOptions = new Dictionary<string, string>
+                        {
+                            { "checkbox", string.Empty },
+                        };
+                    }
+                    else if (text.StartsWith("[x] ") || text.StartsWith("[*] "))
+                    {
+                        elementOptions = new Dictionary<string, string>
+                        {
+                            { "checkbox", string.Empty },
+                            { "checked", string.Empty },
+                        };
+                    }
+
+                    if (elementOptions is not null)
+                    {
+                        text = text[4..];
+
+                        options ??= string.Empty;
+                        if (!string.IsNullOrWhiteSpace(options))
+                        {
+                            options += ",";
+                        }
+                        options += ",checklist=true";
+                    }
+
                     var elements = DoParse(
-                        new Reader(buffer.ToString().Split("\n")),
+                        new Reader(text.Split("\n")),
                         _ => true,
                         resolver,
                         currentAttributes,
@@ -1112,8 +1174,11 @@ namespace NAsciidoc.Parser
                     );
                     children.Add(
                         elements.Count > 1
-                            ? new Paragraph(elements, ImmutableDictionary<string, string>.Empty)
-                            : elements[0]
+                            ? new Paragraph(
+                                elements,
+                                elementOptions ?? ImmutableDictionary<string, string>.Empty
+                            )
+                            : InjectOptions(elements[0], elementOptions)
                     );
                 }
                 else

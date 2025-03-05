@@ -7,8 +7,7 @@ public record Macro(
     bool Inline
 ) : IElement
 {
-    public IElement.ElementType Type()
-    {
-        return IElement.ElementType.Macro;
-    }
+    public IElement.ElementType Type() => IElement.ElementType.Macro;
+
+    public IDictionary<string, string> Opts() => Options;
 }

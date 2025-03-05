@@ -579,11 +579,23 @@ public class AsciidoctorLikeHtmlRenderer : Visitor<string>
             element.Children,
             () =>
             {
+                var isCheckList = element.Options.ContainsKey("checklist");
                 builder.Append(" <div");
-                WriteCommonAttributes(element.Options, c => "ulist" + (c != null ? ' ' + c : ""));
+                WriteCommonAttributes(
+                    element.Options,
+                    c =>
+                        "ulist"
+                        + (c != null ? ' ' + c : string.Empty)
+                        + (isCheckList ? " checklist" : string.Empty)
+                );
                 builder.Append(">\n");
-                builder.Append(" <ul>\n");
-                VisitListElements(element.Children);
+                builder.Append(" <ul");
+                if (isCheckList)
+                {
+                    builder.Append(" class=\"checklist\"");
+                }
+                builder.Append(">\n");
+                VisitListElements(element.Children, isCheckList);
                 builder.Append(" </ul>\n");
                 builder.Append(" </div>\n");
             }
@@ -1465,21 +1477,30 @@ public class AsciidoctorLikeHtmlRenderer : Visitor<string>
         }
     }
 
-    private void VisitListElements(IList<IElement> element)
+    private void VisitListElements(IList<IElement> element, bool checkList = false)
     {
         foreach (var elt in element)
         {
             builder.Append("  <li>\n");
+            if (checkList)
+            {
+                if (elt.Opts().ContainsKey("checkbox"))
+                {
+                    // todo: support more than fontawesome?
+                    builder.Append(
+                        elt.Opts().ContainsKey("checked")
+                            ? "<i class=\"fa fa-check-square-o\"></i> "
+                            : "<i class=\"fa fa-square-o\"></i> "
+                    );
+                }
+            }
             VisitElement(elt);
             builder.Append("  </li>\n");
         }
     }
 
-    protected bool IsList(IElement.ElementType type)
-    {
-        return type == IElement.ElementType.UnorderedList
-            || type == IElement.ElementType.OrderedList;
-    }
+    protected bool IsList(IElement.ElementType type) =>
+        type is IElement.ElementType.UnorderedList or IElement.ElementType.OrderedList;
 
     protected void AfterBodyStart()
     {

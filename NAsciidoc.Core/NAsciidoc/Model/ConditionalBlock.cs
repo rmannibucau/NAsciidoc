@@ -6,10 +6,9 @@ public record ConditionalBlock(
     IDictionary<string, string> Options
 ) : IElement
 {
-    public IElement.ElementType Type()
-    {
-        return IElement.ElementType.ConditionalBlock;
-    }
+    public IElement.ElementType Type() => IElement.ElementType.ConditionalBlock;
+
+    public IDictionary<string, string> Opts() => Options;
 
     public interface IContext
     {
