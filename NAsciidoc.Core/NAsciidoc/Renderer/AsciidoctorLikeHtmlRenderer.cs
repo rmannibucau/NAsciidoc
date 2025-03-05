@@ -1517,8 +1517,9 @@ public class AsciidoctorLikeHtmlRenderer : Visitor<string>
                 .Append("</div>\n");
         }
 
-        new TocVisitor(toclevels, 1).VisitBody(body);
-        builder.Append(new TocVisitor(toclevels, 1).Result());
+        var tocVisitor = new TocVisitor(toclevels, 2);
+        tocVisitor.VisitBody(body);
+        builder.Append(tocVisitor.Result());
         builder.Append(" </div>\n");
     }
 

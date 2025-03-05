@@ -5,6 +5,66 @@ namespace NAsciidoc.Renderer;
 public class AsciidoctorLikeHtmlRendererTests
 {
     [Fact]
+    public void Toc()
+    {
+        AssertRendering(
+            """
+            = Foo
+            :toc: true
+
+            == Bar
+
+            Something
+
+            == Dummy
+
+            Else
+            """,
+            """
+            <!DOCTYPE html>
+            <html lang="en">
+            <head>
+             <meta charset="UTF-8">
+             <meta http-equiv="X-UA-Compatible" content="IE=edge">
+            </head>
+            <body>
+             <div id="content">
+             <h1>Foo</h1>
+             <div id="toc" class="toc">
+              <div id="toctitle">Foo</div>
+             <ul class="sectlevel2">
+             <li><a href="#_bar">Bar</a></li>
+             <li><a href="#_dummy">Dummy</a></li>
+             </ul>
+             </div>
+             <div class="sect1" id="_bar">
+              <h2>Bar</h2>
+             <div class="sectionbody">
+             <div class="paragraph">
+             <p>
+            Something
+             </p>
+             </div>
+             </div>
+             </div>
+             <div class="sect1" id="_dummy">
+              <h2>Dummy</h2>
+             <div class="sectionbody">
+             <div class="paragraph">
+             <p>
+            Else
+             </p>
+             </div>
+             </div>
+             </div>
+             </div>
+            </body>
+            </html>
+            """
+        );
+    }
+
+    [Fact]
     public void UnescapeVariableInInlineCode()
     {
         AssertRenderingContent(
@@ -78,13 +138,13 @@ public class AsciidoctorLikeHtmlRendererTests
             ....
             """,
             """
-<div class="sect0" id="_test">
-  <h1>Test</h1>
- <div class="sectionbody">
- <img src="data:image/svg+xml;base64,PCFET0NUWVBFIHN2ZyBQVUJMSUMgIi0vL1czQy8vRFREIFNWRyAxLjEvL0VOIiAiaHR0cDovL3d3dy53My5vcmcvR3JhcGhpY3MvU1ZHLzEuMS9EVEQvc3ZnMTEuZHRkIj4KPHN2ZyB3aWR0aD0iMjUycHgiIGhlaWdodD0iMTYwcHgiIHZlcnNpb249IjEuMSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB4bWxuczp4bGluaz0iaHR0cDovL3d3dy53My5vcmcvMTk5OS94bGluayI+CiAgPGRlZnM+CiAgICA8ZmlsdGVyIGlkPSJkc0ZpbHRlciIgd2lkdGg9IjE1MCUiIGhlaWdodD0iMTUwJSI+CiAgICAgIDxmZU9mZnNldCByZXN1bHQ9Im9mZk91dCIgaW49IlNvdXJjZUdyYXBoaWMiIGR4PSIyIiBkeT0iMiIvPgogICAgICA8ZmVDb2xvck1hdHJpeCByZXN1bHQ9Im1hdHJpeE91dCIgaW49Im9mZk91dCIgdHlwZT0ibWF0cml4IiB2YWx1ZXM9IjAuMiAwIDAgMCAwIDAgMC4yIDAgMCAwIDAgMCAwLjIgMCAwIDAgMCAwIDEgMCIvPgogICAgICA8ZmVHYXVzc2lhbkJsdXIgcmVzdWx0PSJibHVyT3V0IiBpbj0ibWF0cml4T3V0IiBzdGREZXZpYXRpb249IjMiLz4KICAgICAgPGZlQmxlbmQgaW49IlNvdXJjZUdyYXBoaWMiIGluMj0iYmx1ck91dCIgbW9kZT0ibm9ybWFsIi8+CiAgICA8L2ZpbHRlcj4KICAgIDxtYXJrZXIgaWQ9ImlQb2ludGVyIgogICAgICB2aWV3Qm94PSIwIDAgMTAgMTAiIHJlZlg9IjUiIHJlZlk9IjUiCiAgICAgIG1hcmtlclVuaXRzPSJzdHJva2VXaWR0aCIKICAgICAgbWFya2VyV2lkdGg9IjgiIG1hcmtlckhlaWdodD0iMTUiCiAgICAgIG9yaWVudD0iYXV0byI+CiAgICAgIDxwYXRoIGQ9Ik0gMTAgMCBMIDEwIDEwIEwgMCA1IHoiIC8+CiAgICA8L21hcmtlcj4KICAgIDxtYXJrZXIgaWQ9IlBvaW50ZXIiCiAgICAgIHZpZXdCb3g9IjAgMCAxMCAxMCIgcmVmWD0iNSIgcmVmWT0iNSIKICAgICAgbWFya2VyVW5pdHM9InN0cm9rZVdpZHRoIgogICAgICBtYXJrZXJXaWR0aD0iOCIgbWFya2VySGVpZ2h0PSIxNSIKICAgICAgb3JpZW50PSJhdXRvIj4KICAgICAgPHBhdGggZD0iTSAwIDAgTCAxMCA1IEwgMCAxMCB6IiAvPgogICAgPC9tYXJrZXI+CiAgPC9kZWZzPgogIDxnIGlkPSJjbG9zZWQiIHN0cm9rZT0iIzAwMCIgc3Ryb2tlLXdpZHRoPSIyIiBmaWxsPSJub25lIj4KICAgIDxwYXRoIGlkPSJjbG9zZWQwIiBmaWxsPSIjZmZmIiBkPSJNIDQuNSAxOCBRIDQuNSA4IDE0LjUgOCBMIDEzLjUgOCAgTCAyMi41IDggIEwgMzEuNSA4ICBMIDQwLjUgOCAgTCA0OS41IDggIEwgNTguNSA4ICBMIDY3LjUgOCAgTCA3Ni41IDggIEwgODUuNSA4ICBMIDk0LjUgOCAgTCAxMDMuNSA4ICBMIDExMi41IDggIEwgMTIxLjUgOCAgTCAxMzAuNSA4ICBMIDEzOS41IDggIEwgMTQ4LjUgOCAgTCAxNTcuNSA4ICBMIDE2Ni41IDggIEwgMTc1LjUgOCAgTCAxODQuNSA4ICBMIDE5My41IDggIEwgMjAyLjUgOCAgTCAyMTEuNSA4ICBMIDIyMC41IDggIEwgMjI5LjUgOCAgTCAyMjguNSA4IFEgMjM4LjUgOCAyMzguNSAxOCAgTCAyMzguNSAyNCAgTCAyMzguNSA0MCAgTCAyMzguNSA1NiAgTCAyMzguNSA3MiAgTCAyMzguNSA4OCAgTCAyMzguNSAxMDQgIEwgMjM4LjUgMTIwICBMIDIzOC41IDEyNiBRIDIzOC41IDEzNiAyMjguNSAxMzYgIEwgMjI5LjUgMTM2ICBMIDIyMC41IDEzNiAgTCAyMTEuNSAxMzYgIEwgMjAyLjUgMTM2ICBMIDE5My41IDEzNiAgTCAxODQuNSAxMzYgIEwgMTc1LjUgMTM2ICBMIDE2Ni41IDEzNiAgTCAxNTcuNSAxMzYgIEwgMTQ4LjUgMTM2ICBMIDEzOS41IDEzNiAgTCAxMzAuNSAxMzYgIEwgMTIxLjUgMTM2ICBMIDExMi41IDEzNiAgTCAxMDMuNSAxMzYgIEwgOTQuNSAxMzYgIEwgODUuNSAxMzYgIEwgNzYuNSAxMzYgIEwgNjcuNSAxMzYgIEwgNTguNSAxMzYgIEwgNDkuNSAxMzYgIEwgNDAuNSAxMzYgIEwgMzEuNSAxMzYgIEwgMjIuNSAxMzYgIEwgMTMuNSAxMzYgIEwgMTQuNSAxMzYgUSA0LjUgMTM2IDQuNSAxMjYgIEwgNC41IDEyMCAgTCA0LjUgMTA0ICBMIDQuNSA4OCAgTCA0LjUgNzIgIEwgNC41IDU2ICBMIDQuNSA0MCAgTCA0LjUgMjQgWiIgLz4KICAgIDxwYXRoIGlkPSJjbG9zZWQxIiBmaWxsPSIjZmZmIiBkPSJNIDIyLjUgNTAgUSAyMi41IDQwIDMyLjUgNDAgTCAzMS41IDQwICBMIDQwLjUgNDAgIEwgNDkuNSA0MCAgTCA1OC41IDQwICBMIDY3LjUgNDAgIEwgNjYuNSA0MCBRIDc2LjUgNDAgNzYuNSA1MCAgTCA3Ni41IDU2ICBMIDc2LjUgNzIgIEwgNzYuNSA3OCBRIDc2LjUgODggNjYuNSA4OCAgTCA2Ny41IDg4ICBMIDU4LjUgODggIEwgNDkuNSA4OCAgTCA0MC41IDg4ICBMIDMxLjUgODggIEwgMzIuNSA4OCBRIDIyLjUgODggMjIuNSA3OCAgTCAyMi41IDcyICBMIDIyLjUgNTYgWiIgLz4KICAgIDxwYXRoIGlkPSJjbG9zZWQzIiBmaWxsPSIjZmZmIiBkPSJNIDk0LjUgNTAgUSA5NC41IDQwIDEwNC41IDQwIEwgMTAzLjUgNDAgIEwgMTEyLjUgNDAgIEwgMTIxLjUgNDAgIEwgMTMwLjUgNDAgIEwgMTM5LjUgNDAgIEwgMTM4LjUgNDAgUSAxNDguNSA0MCAxNDguNSA1MCAgTCAxNDguNSA1NiAgTCAxNDguNSA3MiAgTCAxNDguNSA3OCBRIDE0OC41IDg4IDEzOC41IDg4ICBMIDEzOS41IDg4ICBMIDEzMC41IDg4ICBMIDEyMS41IDg4ICBMIDExMi41IDg4ICBMIDEwMy41IDg4ICBMIDEwNC41IDg4IFEgOTQuNSA4OCA5NC41IDc4ICBMIDk0LjUgNzIgIEwgOTQuNSA1NiBaIiAvPgogICAgPHBhdGggaWQ9ImNsb3NlZDUiIGZpbGw9IiNmZmYiIGQ9Ik0gMTY2LjUgNTAgUSAxNjYuNSA0MCAxNzYuNSA0MCBMIDE3NS41IDQwICBMIDE4NC41IDQwICBMIDE5My41IDQwICBMIDIwMi41IDQwICBMIDIxMS41IDQwICBMIDIxMC41IDQwIFEgMjIwLjUgNDAgMjIwLjUgNTAgIEwgMjIwLjUgNTYgIEwgMjIwLjUgNzIgIEwgMjIwLjUgNzggUSAyMjAuNSA4OCAyMTAuNSA4OCAgTCAyMTEuNSA4OCAgTCAyMDIuNSA4OCAgTCAxOTMuNSA4OCAgTCAxODQuNSA4OCAgTCAxNzUuNSA4OCAgTCAxNzYuNSA4OCBRIDE2Ni41IDg4IDE2Ni41IDc4ICBMIDE2Ni41IDcyICBMIDE2Ni41IDU2IFoiIC8+CiAgPC9nPgogIDxnIGlkPSJsaW5lcyIgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjIiIGZpbGw9Im5vbmUiPgogICAgPHBhdGggaWQ9Im9wZW4yIiBkPSJNIDIyLjUgNTAgUSAyMi41IDQwIDMyLjUgNDAgTCAzMS41IDQwICBMIDQwLjUgNDAgIEwgNDkuNSA0MCAgTCA1OC41IDQwICBMIDY3LjUgNDAgIEwgNjYuNSA0MCBRIDc2LjUgNDAgNzYuNSA1MCAgTCA3Ni41IDU2ICBMIDc2LjUgNzIgIEwgNzYuNSA3OCBRIDc2LjUgODggNjYuNSA4OCAgTCA2Ny41IDg4ICBMIDY4LjUgODggUSA1OC41IDg4IDU4LjUgNzggIEwgNTguNSA4MiBRIDU4LjUgNzIgNDguNSA3MiAgTCA0OS41IDcyICBMIDUwLjUgNzIgUSA0MC41IDcyIDQwLjUgNjIgIEwgNDAuNSA2NiBRIDQwLjUgNTYgNTAuNSA1NiAgTCA0OS41IDU2ICBMIDQ4LjUgNTYgUSA1OC41IDU2IDU4LjUgNDYgIiAvPgogICAgPHBhdGggaWQ9Im9wZW40IiBtYXJrZXItZW5kPSJ1cmwoI1BvaW50ZXIpIiAgZD0iTSAxNjYuNSA1MCBRIDE2Ni41IDQwIDE3Ni41IDQwIEwgMTc1LjUgNDAgIEwgMTg0LjUgNDAgIEwgMTkzLjUgNDAgIEwgMjAyLjUgNDAgIEwgMjExLjUgNDAgIEwgMjEwLjUgNDAgUSAyMjAuNSA0MCAyMjAuNSA1MCAgTCAyMjAuNSA1NiAgTCAyMjAuNSA3MiAgTCAyMjAuNSA3OCBRIDIyMC41IDg4IDIxMC41IDg4ICBMIDIxMS41IDg4ICBMIDIwMi41IDg4ICBMIDE5My41IDg4ICBMIDE4NC41IDg4ICBMIDE3NS41IDg4ICBMIDE3Ni41IDg4IFEgMTY2LjUgODggMTY2LjUgNzggIEwgMTY2LjUgNzIgIEwgMTc1LjUgNzIgIEwgMTg0LjUgNzIgIEwgMTkzLjUgNzIgIiAvPgogICAgPHBhdGggaWQ9Im9wZW42IiBtYXJrZXItZW5kPSJ1cmwoI1BvaW50ZXIpIiAgZD0iTSA5NC41IDU2IEwgMTAzLjUgNTYgIEwgMTEyLjUgNTYgIEwgMTIxLjUgNTYgIiAvPgogICAgPHBhdGggaWQ9Im9wZW43IiBtYXJrZXItc3RhcnQ9InVybCgjaVBvaW50ZXIpIiAgZD0iTSAxOTMuNSA1NiBMIDIwMi41IDU2ICBMIDIxMS41IDU2ICIgLz4KICAgIDxwYXRoIGlkPSJvcGVuOCIgbWFya2VyLXN0YXJ0PSJ1cmwoI2lQb2ludGVyKSIgIGQ9Ik0gMTIxLjUgNzIgTCAxMzAuNSA3MiAgTCAxMzkuNSA3MiAiIC8+CiAgPC9nPgogIDxnIGlkPSJ0ZXh0IiBzdHJva2U9Im5vbmUiIHN0eWxlPSJmb250LWZhbWlseTpDb25zb2xhcyxNb25hY28sQW5vbnltb3VzIFBybyxBbm9ueW1vdXMsQml0c3RyZWFtIFNhbnMgTW9ubyxtb25vc3BhY2U7Zm9udC1zaXplOjE1LjJweCIgPgogICAgPHRleHQgaWQ9Im9iajkiIHg9IjMxLjUiIHk9IjEwNCIgZmlsbD0iIzAwMCI+YXNjaWk8L3RleHQ+CiAgICA8dGV4dCBpZD0ib2JqMTAiIHg9IjEyMS41IiB5PSIxMDQiIGZpbGw9IiMwMDAiPjI8L3RleHQ+CiAgICA8dGV4dCBpZD0ib2JqMTEiIHg9IjE4NC41IiB5PSIxMDQiIGZpbGw9IiMwMDAiPnN2ZzwvdGV4dD4KICA8L2c+Cjwvc3ZnPgo=" alt="a2s">
- </div>
- </div>
-"""
+            <div class="sect0" id="_test">
+              <h1>Test</h1>
+             <div class="sectionbody">
+             <img src="data:image/svg+xml;base64,PCFET0NUWVBFIHN2ZyBQVUJMSUMgIi0vL1czQy8vRFREIFNWRyAxLjEvL0VOIiAiaHR0cDovL3d3dy53My5vcmcvR3JhcGhpY3MvU1ZHLzEuMS9EVEQvc3ZnMTEuZHRkIj4KPHN2ZyB3aWR0aD0iMjUycHgiIGhlaWdodD0iMTYwcHgiIHZlcnNpb249IjEuMSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB4bWxuczp4bGluaz0iaHR0cDovL3d3dy53My5vcmcvMTk5OS94bGluayI+CiAgPGRlZnM+CiAgICA8ZmlsdGVyIGlkPSJkc0ZpbHRlciIgd2lkdGg9IjE1MCUiIGhlaWdodD0iMTUwJSI+CiAgICAgIDxmZU9mZnNldCByZXN1bHQ9Im9mZk91dCIgaW49IlNvdXJjZUdyYXBoaWMiIGR4PSIyIiBkeT0iMiIvPgogICAgICA8ZmVDb2xvck1hdHJpeCByZXN1bHQ9Im1hdHJpeE91dCIgaW49Im9mZk91dCIgdHlwZT0ibWF0cml4IiB2YWx1ZXM9IjAuMiAwIDAgMCAwIDAgMC4yIDAgMCAwIDAgMCAwLjIgMCAwIDAgMCAwIDEgMCIvPgogICAgICA8ZmVHYXVzc2lhbkJsdXIgcmVzdWx0PSJibHVyT3V0IiBpbj0ibWF0cml4T3V0IiBzdGREZXZpYXRpb249IjMiLz4KICAgICAgPGZlQmxlbmQgaW49IlNvdXJjZUdyYXBoaWMiIGluMj0iYmx1ck91dCIgbW9kZT0ibm9ybWFsIi8+CiAgICA8L2ZpbHRlcj4KICAgIDxtYXJrZXIgaWQ9ImlQb2ludGVyIgogICAgICB2aWV3Qm94PSIwIDAgMTAgMTAiIHJlZlg9IjUiIHJlZlk9IjUiCiAgICAgIG1hcmtlclVuaXRzPSJzdHJva2VXaWR0aCIKICAgICAgbWFya2VyV2lkdGg9IjgiIG1hcmtlckhlaWdodD0iMTUiCiAgICAgIG9yaWVudD0iYXV0byI+CiAgICAgIDxwYXRoIGQ9Ik0gMTAgMCBMIDEwIDEwIEwgMCA1IHoiIC8+CiAgICA8L21hcmtlcj4KICAgIDxtYXJrZXIgaWQ9IlBvaW50ZXIiCiAgICAgIHZpZXdCb3g9IjAgMCAxMCAxMCIgcmVmWD0iNSIgcmVmWT0iNSIKICAgICAgbWFya2VyVW5pdHM9InN0cm9rZVdpZHRoIgogICAgICBtYXJrZXJXaWR0aD0iOCIgbWFya2VySGVpZ2h0PSIxNSIKICAgICAgb3JpZW50PSJhdXRvIj4KICAgICAgPHBhdGggZD0iTSAwIDAgTCAxMCA1IEwgMCAxMCB6IiAvPgogICAgPC9tYXJrZXI+CiAgPC9kZWZzPgogIDxnIGlkPSJjbG9zZWQiIHN0cm9rZT0iIzAwMCIgc3Ryb2tlLXdpZHRoPSIyIiBmaWxsPSJub25lIj4KICAgIDxwYXRoIGlkPSJjbG9zZWQwIiBmaWxsPSIjZmZmIiBkPSJNIDQuNSAxOCBRIDQuNSA4IDE0LjUgOCBMIDEzLjUgOCAgTCAyMi41IDggIEwgMzEuNSA4ICBMIDQwLjUgOCAgTCA0OS41IDggIEwgNTguNSA4ICBMIDY3LjUgOCAgTCA3Ni41IDggIEwgODUuNSA4ICBMIDk0LjUgOCAgTCAxMDMuNSA4ICBMIDExMi41IDggIEwgMTIxLjUgOCAgTCAxMzAuNSA4ICBMIDEzOS41IDggIEwgMTQ4LjUgOCAgTCAxNTcuNSA4ICBMIDE2Ni41IDggIEwgMTc1LjUgOCAgTCAxODQuNSA4ICBMIDE5My41IDggIEwgMjAyLjUgOCAgTCAyMTEuNSA4ICBMIDIyMC41IDggIEwgMjI5LjUgOCAgTCAyMjguNSA4IFEgMjM4LjUgOCAyMzguNSAxOCAgTCAyMzguNSAyNCAgTCAyMzguNSA0MCAgTCAyMzguNSA1NiAgTCAyMzguNSA3MiAgTCAyMzguNSA4OCAgTCAyMzguNSAxMDQgIEwgMjM4LjUgMTIwICBMIDIzOC41IDEyNiBRIDIzOC41IDEzNiAyMjguNSAxMzYgIEwgMjI5LjUgMTM2ICBMIDIyMC41IDEzNiAgTCAyMTEuNSAxMzYgIEwgMjAyLjUgMTM2ICBMIDE5My41IDEzNiAgTCAxODQuNSAxMzYgIEwgMTc1LjUgMTM2ICBMIDE2Ni41IDEzNiAgTCAxNTcuNSAxMzYgIEwgMTQ4LjUgMTM2ICBMIDEzOS41IDEzNiAgTCAxMzAuNSAxMzYgIEwgMTIxLjUgMTM2ICBMIDExMi41IDEzNiAgTCAxMDMuNSAxMzYgIEwgOTQuNSAxMzYgIEwgODUuNSAxMzYgIEwgNzYuNSAxMzYgIEwgNjcuNSAxMzYgIEwgNTguNSAxMzYgIEwgNDkuNSAxMzYgIEwgNDAuNSAxMzYgIEwgMzEuNSAxMzYgIEwgMjIuNSAxMzYgIEwgMTMuNSAxMzYgIEwgMTQuNSAxMzYgUSA0LjUgMTM2IDQuNSAxMjYgIEwgNC41IDEyMCAgTCA0LjUgMTA0ICBMIDQuNSA4OCAgTCA0LjUgNzIgIEwgNC41IDU2ICBMIDQuNSA0MCAgTCA0LjUgMjQgWiIgLz4KICAgIDxwYXRoIGlkPSJjbG9zZWQxIiBmaWxsPSIjZmZmIiBkPSJNIDIyLjUgNTAgUSAyMi41IDQwIDMyLjUgNDAgTCAzMS41IDQwICBMIDQwLjUgNDAgIEwgNDkuNSA0MCAgTCA1OC41IDQwICBMIDY3LjUgNDAgIEwgNjYuNSA0MCBRIDc2LjUgNDAgNzYuNSA1MCAgTCA3Ni41IDU2ICBMIDc2LjUgNzIgIEwgNzYuNSA3OCBRIDc2LjUgODggNjYuNSA4OCAgTCA2Ny41IDg4ICBMIDU4LjUgODggIEwgNDkuNSA4OCAgTCA0MC41IDg4ICBMIDMxLjUgODggIEwgMzIuNSA4OCBRIDIyLjUgODggMjIuNSA3OCAgTCAyMi41IDcyICBMIDIyLjUgNTYgWiIgLz4KICAgIDxwYXRoIGlkPSJjbG9zZWQzIiBmaWxsPSIjZmZmIiBkPSJNIDk0LjUgNTAgUSA5NC41IDQwIDEwNC41IDQwIEwgMTAzLjUgNDAgIEwgMTEyLjUgNDAgIEwgMTIxLjUgNDAgIEwgMTMwLjUgNDAgIEwgMTM5LjUgNDAgIEwgMTM4LjUgNDAgUSAxNDguNSA0MCAxNDguNSA1MCAgTCAxNDguNSA1NiAgTCAxNDguNSA3MiAgTCAxNDguNSA3OCBRIDE0OC41IDg4IDEzOC41IDg4ICBMIDEzOS41IDg4ICBMIDEzMC41IDg4ICBMIDEyMS41IDg4ICBMIDExMi41IDg4ICBMIDEwMy41IDg4ICBMIDEwNC41IDg4IFEgOTQuNSA4OCA5NC41IDc4ICBMIDk0LjUgNzIgIEwgOTQuNSA1NiBaIiAvPgogICAgPHBhdGggaWQ9ImNsb3NlZDUiIGZpbGw9IiNmZmYiIGQ9Ik0gMTY2LjUgNTAgUSAxNjYuNSA0MCAxNzYuNSA0MCBMIDE3NS41IDQwICBMIDE4NC41IDQwICBMIDE5My41IDQwICBMIDIwMi41IDQwICBMIDIxMS41IDQwICBMIDIxMC41IDQwIFEgMjIwLjUgNDAgMjIwLjUgNTAgIEwgMjIwLjUgNTYgIEwgMjIwLjUgNzIgIEwgMjIwLjUgNzggUSAyMjAuNSA4OCAyMTAuNSA4OCAgTCAyMTEuNSA4OCAgTCAyMDIuNSA4OCAgTCAxOTMuNSA4OCAgTCAxODQuNSA4OCAgTCAxNzUuNSA4OCAgTCAxNzYuNSA4OCBRIDE2Ni41IDg4IDE2Ni41IDc4ICBMIDE2Ni41IDcyICBMIDE2Ni41IDU2IFoiIC8+CiAgPC9nPgogIDxnIGlkPSJsaW5lcyIgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjIiIGZpbGw9Im5vbmUiPgogICAgPHBhdGggaWQ9Im9wZW4yIiBkPSJNIDIyLjUgNTAgUSAyMi41IDQwIDMyLjUgNDAgTCAzMS41IDQwICBMIDQwLjUgNDAgIEwgNDkuNSA0MCAgTCA1OC41IDQwICBMIDY3LjUgNDAgIEwgNjYuNSA0MCBRIDc2LjUgNDAgNzYuNSA1MCAgTCA3Ni41IDU2ICBMIDc2LjUgNzIgIEwgNzYuNSA3OCBRIDc2LjUgODggNjYuNSA4OCAgTCA2Ny41IDg4ICBMIDY4LjUgODggUSA1OC41IDg4IDU4LjUgNzggIEwgNTguNSA4MiBRIDU4LjUgNzIgNDguNSA3MiAgTCA0OS41IDcyICBMIDUwLjUgNzIgUSA0MC41IDcyIDQwLjUgNjIgIEwgNDAuNSA2NiBRIDQwLjUgNTYgNTAuNSA1NiAgTCA0OS41IDU2ICBMIDQ4LjUgNTYgUSA1OC41IDU2IDU4LjUgNDYgIiAvPgogICAgPHBhdGggaWQ9Im9wZW40IiBtYXJrZXItZW5kPSJ1cmwoI1BvaW50ZXIpIiAgZD0iTSAxNjYuNSA1MCBRIDE2Ni41IDQwIDE3Ni41IDQwIEwgMTc1LjUgNDAgIEwgMTg0LjUgNDAgIEwgMTkzLjUgNDAgIEwgMjAyLjUgNDAgIEwgMjExLjUgNDAgIEwgMjEwLjUgNDAgUSAyMjAuNSA0MCAyMjAuNSA1MCAgTCAyMjAuNSA1NiAgTCAyMjAuNSA3MiAgTCAyMjAuNSA3OCBRIDIyMC41IDg4IDIxMC41IDg4ICBMIDIxMS41IDg4ICBMIDIwMi41IDg4ICBMIDE5My41IDg4ICBMIDE4NC41IDg4ICBMIDE3NS41IDg4ICBMIDE3Ni41IDg4IFEgMTY2LjUgODggMTY2LjUgNzggIEwgMTY2LjUgNzIgIEwgMTc1LjUgNzIgIEwgMTg0LjUgNzIgIEwgMTkzLjUgNzIgIiAvPgogICAgPHBhdGggaWQ9Im9wZW42IiBtYXJrZXItZW5kPSJ1cmwoI1BvaW50ZXIpIiAgZD0iTSA5NC41IDU2IEwgMTAzLjUgNTYgIEwgMTEyLjUgNTYgIEwgMTIxLjUgNTYgIiAvPgogICAgPHBhdGggaWQ9Im9wZW43IiBtYXJrZXItc3RhcnQ9InVybCgjaVBvaW50ZXIpIiAgZD0iTSAxOTMuNSA1NiBMIDIwMi41IDU2ICBMIDIxMS41IDU2ICIgLz4KICAgIDxwYXRoIGlkPSJvcGVuOCIgbWFya2VyLXN0YXJ0PSJ1cmwoI2lQb2ludGVyKSIgIGQ9Ik0gMTIxLjUgNzIgTCAxMzAuNSA3MiAgTCAxMzkuNSA3MiAiIC8+CiAgPC9nPgogIDxnIGlkPSJ0ZXh0IiBzdHJva2U9Im5vbmUiIHN0eWxlPSJmb250LWZhbWlseTpDb25zb2xhcyxNb25hY28sQW5vbnltb3VzIFBybyxBbm9ueW1vdXMsQml0c3RyZWFtIFNhbnMgTW9ubyxtb25vc3BhY2U7Zm9udC1zaXplOjE1LjJweCIgPgogICAgPHRleHQgaWQ9Im9iajkiIHg9IjMxLjUiIHk9IjEwNCIgZmlsbD0iIzAwMCI+YXNjaWk8L3RleHQ+CiAgICA8dGV4dCBpZD0ib2JqMTAiIHg9IjEyMS41IiB5PSIxMDQiIGZpbGw9IiMwMDAiPjI8L3RleHQ+CiAgICA8dGV4dCBpZD0ib2JqMTEiIHg9IjE4NC41IiB5PSIxMDQiIGZpbGw9IiMwMDAiPnN2ZzwvdGV4dD4KICA8L2c+Cjwvc3ZnPgo=" alt="a2s">
+             </div>
+             </div>
+            """
         );
     }
 
@@ -126,25 +186,25 @@ public class AsciidoctorLikeHtmlRendererTests
             *Command line:* `--sbsharp:Input:Location=<value>`.
             """,
             """
-<dl>
-  <dt>Location</dt>
-  <dd>
- <div class="paragraph">
- <p>
-Site source base directory.
- </p>
- <div class="paragraph">
-<b>Default value:</b><code>.</code>. </div>
- <div class="paragraph">
- <p><b>Environment variable:</b><code>SBSHARP__INPUT__LOCATION</code>.</p>
- </div>
- <div class="paragraph">
- <p><b>Command line:</b><code>--sbsharp:Input:Location=&lt;value&gt;</code>.</p>
- </div>
- </div>
-</dd>
- </dl>
-"""
+            <dl>
+              <dt>Location</dt>
+              <dd>
+             <div class="paragraph">
+             <p>
+            Site source base directory.
+             </p>
+             <div class="paragraph">
+            <b>Default value:</b><code>.</code>. </div>
+             <div class="paragraph">
+             <p><b>Environment variable:</b><code>SBSHARP__INPUT__LOCATION</code>.</p>
+             </div>
+             <div class="paragraph">
+             <p><b>Command line:</b><code>--sbsharp:Input:Location=&lt;value&gt;</code>.</p>
+             </div>
+             </div>
+            </dd>
+             </dl>
+            """
         );
     }
 
@@ -926,17 +986,17 @@ Site source base directory.
             image::img.png[logo,width="10px",height=12px]
             """,
             """
-<div class="sect0" id="_test">
-  <h1>Test</h1>
- <div class="sectionbody">
- <div class="imageblock">
- <div class="content">
- <img src="img.png" alt="logo" width="10px" height="12px">
- </div>
- </div>
- </div>
- </div>
-"""
+            <div class="sect0" id="_test">
+              <h1>Test</h1>
+             <div class="sectionbody">
+             <div class="imageblock">
+             <div class="content">
+             <img src="img.png" alt="logo" width="10px" height="12px">
+             </div>
+             </div>
+             </div>
+             </div>
+            """
         );
         AssertRenderingContent(
             """
@@ -945,17 +1005,17 @@ Site source base directory.
             image::img.png[logo,10,12]
             """,
             """
-<div class="sect0" id="_test">
-  <h1>Test</h1>
- <div class="sectionbody">
- <div class="imageblock">
- <div class="content">
- <img src="img.png" alt="logo" width="10" height="12">
- </div>
- </div>
- </div>
- </div>
-"""
+            <div class="sect0" id="_test">
+              <h1>Test</h1>
+             <div class="sectionbody">
+             <div class="imageblock">
+             <div class="content">
+             <img src="img.png" alt="logo" width="10" height="12">
+             </div>
+             </div>
+             </div>
+             </div>
+            """
         );
     }
 
@@ -1055,6 +1115,32 @@ Site source base directory.
              <div class="sect1" id="_section_1">
               <h2>Section <code>#1</code></h2>
              <div class="sectionbody">
+             </div>
+             </div>
+            """
+        );
+    }
+
+    [Fact]
+    public void CodeInCode()
+    {
+        AssertRenderingContent(
+            """
+            [source]
+            ```
+            [source,bash]
+            ----
+            echo hi
+            ----
+            ```
+            """,
+            """
+            <div class="listingblock">
+             <div class="content">
+             <pre class="highlightjs highlight"><code class=" hljs">[source,bash]
+            ----
+            echo hi
+            ----</code></pre>
              </div>
              </div>
             """
