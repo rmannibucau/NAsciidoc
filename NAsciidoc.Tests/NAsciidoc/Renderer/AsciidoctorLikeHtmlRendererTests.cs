@@ -1300,10 +1300,7 @@ public class AsciidoctorLikeHtmlRendererTests
     {
         var globalAttributes = new Dictionary<string, string>
         {
-            {
-                "partialsdir",
-                "/opt/rmannibucau/dev/rmannibucau_OrangeLogic.Testing.Tools/Documentation/src/_content/_partials"
-            },
+            { "partialsdir", "path/partials" },
         };
         var doc = new Parser.Parser(globalAttributes).ParseBody(
             new Reader(adoc.Replace("\r\n", "\n").Split('\n')),
