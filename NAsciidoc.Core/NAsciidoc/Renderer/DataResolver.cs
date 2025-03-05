@@ -106,7 +106,7 @@ namespace NAsciidoc.Renderer
         private string FindMimeType(string reference, Func<byte[]> content)
         {
             var ext = Path.GetExtension(reference);
-            if (ext is not null && ext != string.Empty && ext != ".tmp")
+            if (ext != string.Empty && ext != ".tmp")
             {
                 // inspired from https://github.com/microsoft/referencesource/blob/51cf7850defa8a17d815b4700b67116e3fa283c2/System.Web/MimeMapping.cs#L96 but dep free
                 return ext switch
@@ -370,6 +370,7 @@ namespace NAsciidoc.Renderer
                     ".stl" => "application/vnd.ms-pki.stl",
                     ".sv4cpio" => "application/x-sv4cpio",
                     ".sv4crc" => "application/x-sv4crc",
+                    ".svg" => "image/svg+xml",
                     ".swf" => "application/x-shockwave-flash",
                     ".t" => "application/x-troff",
                     ".tar" => "application/x-tar",
