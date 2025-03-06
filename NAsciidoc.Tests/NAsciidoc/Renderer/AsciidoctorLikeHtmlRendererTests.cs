@@ -5,6 +5,38 @@ namespace NAsciidoc.Renderer;
 public class AsciidoctorLikeHtmlRendererTests
 {
     [Fact]
+    public void Hr()
+    {
+        AssertRenderingContent(
+            """
+            Foo
+
+            '''
+
+            Bar
+
+            '''
+            """,
+            """
+            <div class="paragraph">
+             <p>
+            Foo
+             </p>
+             </div>
+
+              <hr />
+             <div class="paragraph">
+             <p>
+            Bar
+             </p>
+             </div>
+
+              <hr />
+            """
+        );
+    }
+
+    [Fact]
     public void CheckList()
     {
         AssertRenderingContent(

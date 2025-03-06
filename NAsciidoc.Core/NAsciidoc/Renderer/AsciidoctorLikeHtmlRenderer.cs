@@ -1086,7 +1086,7 @@ public class AsciidoctorLikeHtmlRenderer : Visitor<string>
         }
     }
 
-    protected void VisitXref(Macro element)
+    protected virtual void VisitXref(Macro element)
     {
         var target = element.Label;
         int anchor = target.LastIndexOf('#');
@@ -1111,7 +1111,7 @@ public class AsciidoctorLikeHtmlRenderer : Visitor<string>
             .Append("</a>\n");
     }
 
-    protected void VisitImage(Macro element)
+    protected virtual void VisitImage(Macro element)
     {
         if (
             dataUri
@@ -1158,7 +1158,7 @@ public class AsciidoctorLikeHtmlRenderer : Visitor<string>
         builder.Append(">\n");
     }
 
-    protected void VisitAudio(Macro element)
+    protected virtual void VisitAudio(Macro element)
     {
         builder.Append(" <div");
         WriteCommonAttributes(element.Options, c => "audioblock" + (c == null ? "" : (' ' + c)));
@@ -1177,7 +1177,7 @@ public class AsciidoctorLikeHtmlRenderer : Visitor<string>
         builder.Append(" </div>\n");
     }
 
-    protected void VisitVideo(Macro element)
+    protected virtual void VisitVideo(Macro element)
     {
         builder.Append(" <div");
         WriteCommonAttributes(element.Options, c => "videoblock" + (c == null ? "" : (' ' + c)));
@@ -1196,22 +1196,22 @@ public class AsciidoctorLikeHtmlRenderer : Visitor<string>
         builder.Append(" </div>\n");
     }
 
-    protected void VisitPassthroughInline(Macro element)
+    protected virtual void VisitPassthroughInline(Macro element)
     {
         builder.Append(element.Label);
     }
 
-    protected void VisitBtn(Macro element)
+    protected virtual void VisitBtn(Macro element)
     {
         builder.Append(" <b class=\"button\">").Append(Escape(element.Label)).Append("</b>\n");
     }
 
-    protected void VisitKbd(Macro element)
+    protected virtual void VisitKbd(Macro element)
     {
         builder.Append(" <kbd>").Append(Escape(element.Label)).Append("</kbd>\n");
     }
 
-    protected void VisitIcon(Macro element)
+    protected virtual void VisitIcon(Macro element)
     {
         if (!element.Inline)
         {
@@ -1382,7 +1382,7 @@ public class AsciidoctorLikeHtmlRenderer : Visitor<string>
         return new ConditionalBlock.DictionaryContext(configuration.Attributes);
     }
 
-    protected void OnMissingMacro(Macro element)
+    protected virtual void OnMissingMacro(Macro element)
     {
         base.VisitMacro(element);
     }
@@ -1393,7 +1393,7 @@ public class AsciidoctorLikeHtmlRenderer : Visitor<string>
         resolver?.Dispose();
     }
 
-    protected void VisitStem(Macro element)
+    protected virtual void VisitStem(Macro element)
     {
         state.HasStem = true;
         if (!element.Inline)
@@ -1475,7 +1475,7 @@ public class AsciidoctorLikeHtmlRenderer : Visitor<string>
         return res;
     }
 
-    protected void WriteBlockTitle(IDictionary<string, string> options)
+    protected virtual void WriteBlockTitle(IDictionary<string, string> options)
     {
         if (options.TryGetValue("title", out var title))
         {
@@ -1510,22 +1510,22 @@ public class AsciidoctorLikeHtmlRenderer : Visitor<string>
     protected bool IsList(IElement.ElementType type) =>
         type is IElement.ElementType.UnorderedList or IElement.ElementType.OrderedList;
 
-    protected void AfterBodyStart()
+    protected virtual void AfterBodyStart()
     {
         // no-op
     }
 
-    protected void BeforeBodyEnd()
+    protected virtual void BeforeBodyEnd()
     {
         // no-op
     }
 
-    protected void BeforeHeadEnd()
+    protected virtual void BeforeHeadEnd()
     {
         // no-op
     }
 
-    protected void VisitToc(Body body)
+    protected virtual void VisitToc(Body body)
     {
         int toclevels = int.Parse(
             Attr("toclevels", "toclevels", "2", state.Document.Header.Attributes)!
@@ -1553,7 +1553,7 @@ public class AsciidoctorLikeHtmlRenderer : Visitor<string>
         builder.Append(" </div>\n");
     }
 
-    protected void WriteCommonAttributes(
+    protected virtual void WriteCommonAttributes(
         IDictionary<string, string> options,
         Func<string?, string>? classProcessor
     )
@@ -1591,7 +1591,12 @@ public class AsciidoctorLikeHtmlRenderer : Visitor<string>
         }
     }
 
-    protected void HandlePreamble(bool enableWrappers, IElement next, Action child)
+    public override void VisitHorizontalRule(HorizontalRule element)
+    {
+        builder.Append("\n  <hr />\n");
+    }
+
+    protected virtual void HandlePreamble(bool enableWrappers, IElement next, Action child)
     {
         if (state.SawPreamble)
         {

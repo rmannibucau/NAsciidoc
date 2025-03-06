@@ -2680,6 +2680,13 @@ namespace NAsciidoc.Parser
                     );
                     options = null;
                 }
+                else if ("'''" == stripped)
+                {
+                    elements.Add(
+                        new HorizontalRule(options ?? ImmutableDictionary<string, string>.Empty)
+                    );
+                    options = null;
+                }
                 else if (stripped.StartsWith("> "))
                 {
                     reader.Rewind();

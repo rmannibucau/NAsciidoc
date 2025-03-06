@@ -38,6 +38,7 @@ namespace NAsciidoc.Model
             Quote, // TODO: we only support the markdown style quotes
             PassBlock,
             ConditionalBlock,
+            HorizontalRule,
         }
     }
 }

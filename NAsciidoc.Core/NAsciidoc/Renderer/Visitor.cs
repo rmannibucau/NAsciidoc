@@ -102,9 +102,17 @@ namespace NAsciidoc.Renderer
                 case IElement.ElementType.Listing:
                     VisitListing((Listing)element);
                     break;
+                case IElement.ElementType.HorizontalRule:
+                    VisitHorizontalRule((HorizontalRule)element);
+                    break;
                 default:
                     throw new InvalidOperationException($"Unsupported block: {element.Type()}");
             }
+        }
+
+        public virtual void VisitHorizontalRule(HorizontalRule element)
+        {
+            // no-op
         }
 
         public virtual void VisitListing(Listing element)
