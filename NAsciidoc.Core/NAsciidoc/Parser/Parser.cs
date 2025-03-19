@@ -2778,7 +2778,7 @@ namespace NAsciidoc.Parser
             return elements.Where(it => !(it is Paragraph p && p.Children.Count == 0)).ToList();
         }
 
-        private Header ParseHeader(Reader reader, IContentResolver? resolver)
+        public Header ParseHeader(Reader reader, IContentResolver? resolver)
         {
             var firstLine = reader.SkipCommentsAndEmptyLines();
             if (firstLine is null)
