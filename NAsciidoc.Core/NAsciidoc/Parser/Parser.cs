@@ -928,22 +928,14 @@ namespace NAsciidoc.Parser
             IDictionary<string, string> currentAttributes
         )
         {
-            int firstSemiColon = line.IndexOf(':');
+            var firstSemiColon = line.IndexOf(':');
             if (firstSemiColon < 0)
             {
                 return null;
             }
 
             var name = line[..firstSemiColon].Trim();
-            Admonition.AdmonitionLevel? level = name switch
-            {
-                "IMPORTANT" => Admonition.AdmonitionLevel.Important,
-                "CAUTION" => Admonition.AdmonitionLevel.Caution,
-                "TIP" => Admonition.AdmonitionLevel.Tip,
-                "NOTE" => Admonition.AdmonitionLevel.Note,
-                "WARNING" => Admonition.AdmonitionLevel.Warning,
-                _ => null,
-            };
+            var level = MapAdmonitionLevel(name);
             if (level is null)
             {
                 return null;
@@ -1011,7 +1003,6 @@ namespace NAsciidoc.Parser
             if (
                 unwrapped.Type() == IElement.ElementType.Text
                 && unwrapped is Text t
-                && t.Options.ContainsKey("__internal-container__")
             )
             {
                 t.Options.Remove("__internal-container__");
@@ -1020,13 +1011,45 @@ namespace NAsciidoc.Parser
             return new Admonition(level.Value, unwrapped);
         }
 
-        private bool IsBlock(string strippedLine)
+        private Admonition ParseAdmonitionBlock(
+            Reader reader,
+            IContentResolver? resolver,
+            IDictionary<string, string> currentAttributes,
+            IDictionary<string, string>? options,
+            Admonition.AdmonitionLevel level
+        )
         {
-            return "----" == strippedLine
-                || "```" == strippedLine
-                || "--" == strippedLine
-                || "++++" == strippedLine;
+            var content = new List<string>();
+            string? next;
+            while ((next = reader.NextLine()) != null && (next = next.Trim()) != "====")
+            {
+                content.Add(next);
+            }
+            if (next != null && next != "====")
+            {
+                reader.Rewind();
+            }
+
+            var parsed = DoParse(new Reader(content), l => true, resolver, currentAttributes, true, false);
+            return new Admonition(
+                level,
+                UnwrapElementIfPossible(parsed is [Paragraph p]
+                    ? p
+                    : new Paragraph(parsed, ImmutableDictionary<string, string>.Empty)) );
         }
+
+        private Admonition.AdmonitionLevel? MapAdmonitionLevel(string name) =>
+            name switch
+            {
+                "IMPORTANT" => Admonition.AdmonitionLevel.Important,
+                "CAUTION" => Admonition.AdmonitionLevel.Caution,
+                "TIP" => Admonition.AdmonitionLevel.Tip,
+                "NOTE" => Admonition.AdmonitionLevel.Note,
+                "WARNING" => Admonition.AdmonitionLevel.Warning,
+                _ => null,
+            };
+
+        private bool IsBlock(string strippedLine) => strippedLine is "----" or "```" or "--" or "++++" or "====";
 
         private void ReadContinuation(
             Reader reader,
@@ -1379,7 +1402,7 @@ namespace NAsciidoc.Parser
                         false
                     );
                     var unwrapped = UnwrapElementIfPossible(
-                        element.Count == 1 && element[0] is Paragraph p
+                        element is [Paragraph p]
                             ? p
                             : new Paragraph(element, ImmutableDictionary<string, string>.Empty)
                     );
@@ -2634,6 +2657,14 @@ namespace NAsciidoc.Parser
                         options,
                         new Dictionary<string, string> { { "title", next[1..].Trim() } }
                     );
+                }
+                else if ("====" == stripped &&
+                         options is not null &&
+                         options.TryGetValue(string.Empty, out var pl) &&
+                         MapAdmonitionLevel(pl) is {} level)
+                {
+                    elements.Add(ParseAdmonitionBlock(reader, resolver, attributes, options, level));
+                    options = null;
                 }
                 else if (next.StartsWith('='))
                 {

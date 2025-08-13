@@ -2065,6 +2065,37 @@ public class ParserTests
     }
 
     [Fact]
+    public void AdmonitionBlockParsing()
+    {
+        var body = new Parser().ParseBody(
+            new Reader(
+                """
+                [WARNING]
+                ====
+                Wolpertingers are known to nest in server racks.
+                Enter at your own risk.
+                ====
+                """.ReplaceLineEndings("\n").Split('\n')
+            ),
+            null
+        );
+        Assert.Equivalent(
+            new List<IElement>
+            {
+                new Admonition(
+                    Admonition.AdmonitionLevel.Warning,
+                    new Text(
+                        ImmutableList<Text.Styling>.Empty,
+                        "Wolpertingers are known to nest in server racks. Enter at your own risk.",
+                        ImmutableDictionary<string, string>.Empty
+                    )
+                ),
+            },
+            body.Children
+        );
+    }
+
+    [Fact]
     public void Anchor()
     {
         var body = new Parser().ParseBody(
