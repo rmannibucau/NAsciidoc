@@ -1,9 +1,87 @@
+using System.Text;
 using NAsciidoc.Parser;
 
 namespace NAsciidoc.Renderer;
 
 public class AsciidoctorLikeHtmlRendererTests
 {
+    [Fact]
+    public void IncludeNestedSection()
+    {
+        const string adoc = """
+            = L1
+
+            == L2
+
+            === L3
+
+            include::nested.adoc[]
+
+            """;
+        const string expected = """
+            <div class="sect0" id="_l1">
+              <h1>L1</h1>
+             <div class="sectionbody">
+             <div class="sect1" id="_l2">
+              <h2>L2</h2>
+             <div class="sectionbody">
+             <div class="sect2" id="_l3">
+              <h3>L3</h3>
+             <div class="sectionbody">
+             <div class="sect1" id="_l22">
+              <h2>L22</h2>
+             <div class="sectionbody">
+             <div class="paragraph">
+             <p>
+            bla
+             </p>
+             </div>
+             <div class="sect2" id="_l33">
+              <h3>L33</h3>
+             <div class="sectionbody">
+             </div>
+             </div>
+             </div>
+             </div>
+             </div>
+             </div>
+             </div>
+             </div>
+             </div>
+             </div>
+            """;
+        var globalAttributes = new Dictionary<string, string>
+        {
+            { "partialsdir", "path/partials" },
+        };
+        var doc = new Parser.Parser(globalAttributes).ParseBody(
+            new Reader(adoc.Replace("\r\n", "\n").Split('\n')),
+            new SimpleContentResolver(k =>
+                k == "nested.adoc"
+                    ? """
+                    == L22
+
+                    bla
+
+                    === L33
+                    """
+                    : null
+            )
+        );
+        var renderer = new AsciidoctorLikeHtmlRenderer(
+            new AsciidoctorLikeHtmlRenderer.Configuration
+            {
+                Attributes = new Dictionary<string, string>(globalAttributes)
+                {
+                    { "noheader", "true" },
+                },
+            }
+        );
+        renderer.VisitBody(doc);
+        var actual = renderer.Result().Trim().Replace("\r\n", "\n");
+        Assert.Equal(expected.Trim().Replace("\r\n", "\n"), actual);
+    }
+
     [Fact]
     public void Hr()
     {
@@ -1390,5 +1468,11 @@ public class AsciidoctorLikeHtmlRendererTests
         var expected = html.Trim().Replace("\r\n", "\n");
         var actual = renderer.Result().Trim().Replace("\r\n", "\n");
         Assert.Equal(expected, actual);
+    }
+
+    private sealed class SimpleContentResolver(Func<string, string?> lookup) : IContentResolver
+    {
+        public IEnumerable<string>? Resolve(string reference, Encoding? encoding) =>
+            lookup(reference)?.Split('\n');
     }
 }

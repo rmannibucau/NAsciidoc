@@ -2,15 +2,12 @@
   <PropertyGroup>
     <PackageTags>Ascii2SVG</PackageTags>
   </PropertyGroup>
-
   <Import Project="..\Common.xml" />
-
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <WarningsAsErrors />
   </PropertyGroup>
-
   <ItemGroup>
-    <PackageReference Include="System.Text.Json" Version="9.0.0" />
+    <PackageReference Include="System.Text.Json" Version="9.0.8" />
   </ItemGroup>
 </Project>

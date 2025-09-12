@@ -3,14 +3,11 @@
     <!--OutputType>Exe</OutputType-->
     <PackageTags>Asciidoc</PackageTags>
   </PropertyGroup>
-
   <Import Project="..\Common.xml" />
-
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <WarningsAsErrors />
   </PropertyGroup>
-
   <ItemGroup>
     <ProjectReference Include="..\NAsciidoc.Ascii2SVG\NAsciidoc.Ascii2SVG.csproj" />
   </ItemGroup>

@@ -1000,10 +1000,7 @@ namespace NAsciidoc.Parser
                     );
 
             // for unwrapped texts, avoid an unwanted wrapping <p>
-            if (
-                unwrapped.Type() == IElement.ElementType.Text
-                && unwrapped is Text t
-            )
+            if (unwrapped.Type() == IElement.ElementType.Text && unwrapped is Text t)
             {
                 t.Options.Remove("__internal-container__");
             }
@@ -1030,12 +1027,22 @@ namespace NAsciidoc.Parser
                 reader.Rewind();
             }
 
-            var parsed = DoParse(new Reader(content), l => true, resolver, currentAttributes, true, false);
+            var parsed = DoParse(
+                new Reader(content),
+                l => true,
+                resolver,
+                currentAttributes,
+                true,
+                false
+            );
             return new Admonition(
                 level,
-                UnwrapElementIfPossible(parsed is [Paragraph p]
-                    ? p
-                    : new Paragraph(parsed, ImmutableDictionary<string, string>.Empty)) );
+                UnwrapElementIfPossible(
+                    parsed is [Paragraph p]
+                        ? p
+                        : new Paragraph(parsed, ImmutableDictionary<string, string>.Empty)
+                )
+            );
         }
 
         private Admonition.AdmonitionLevel? MapAdmonitionLevel(string name) =>
@@ -1049,7 +1056,8 @@ namespace NAsciidoc.Parser
                 _ => null,
             };
 
-        private bool IsBlock(string strippedLine) => strippedLine is "----" or "```" or "--" or "++++" or "====";
+        private bool IsBlock(string strippedLine) =>
+            strippedLine is "----" or "```" or "--" or "++++" or "====";
 
         private void ReadContinuation(
             Reader reader,
@@ -2427,7 +2435,8 @@ namespace NAsciidoc.Parser
                         }
                         return ToTableCellFormatter(i, resolver, currentAttributes, iOpts);
                     })
-                    .ToList() ?? []
+                    .ToList()
+                ?? []
                 : [];
 
             var rows = new List<IList<IElement>>(4);
@@ -2658,12 +2667,16 @@ namespace NAsciidoc.Parser
                         new Dictionary<string, string> { { "title", next[1..].Trim() } }
                     );
                 }
-                else if ("====" == stripped &&
-                         options is not null &&
-                         options.TryGetValue(string.Empty, out var pl) &&
-                         MapAdmonitionLevel(pl) is {} level)
+                else if (
+                    "====" == stripped
+                    && options is not null
+                    && options.TryGetValue(string.Empty, out var pl)
+                    && MapAdmonitionLevel(pl) is { } level
+                )
                 {
-                    elements.Add(ParseAdmonitionBlock(reader, resolver, attributes, options, level));
+                    elements.Add(
+                        ParseAdmonitionBlock(reader, resolver, attributes, options, level)
+                    );
                     options = null;
                 }
                 else if (next.StartsWith('='))
