@@ -125,7 +125,7 @@ namespace NAsciidoc.Parser
             {
                 if (keyValue.StartsWith('.'))
                 {
-                    collector.TryAdd("role", keyValue[1..]);
+                    collector.TryAdd("role", string.Join(' ', keyValue[1..].Split('.')));
                 }
                 else if (keyValue.StartsWith('#'))
                 {
@@ -149,7 +149,7 @@ namespace NAsciidoc.Parser
             }
             else
             {
-                collector.TryAdd(keyValue, value.ToString());
+                collector.TryAdd(keyValue.TrimStart(), value.ToString());
             }
         }
 
@@ -2445,6 +2445,39 @@ namespace NAsciidoc.Parser
             {
                 next = next.Trim();
                 var cells = new List<IElement>();
+
+                // FIXME: for now only tolerate to merge last cell
+                if (!next.TrimStart().StartsWith('|') && rows.Count > 0 && rows[^1].Count > 0)
+                {
+                    var line =
+                        cellParser.Count > rows[^1].Count - 1
+                            ? cellParser[rows[^1].Count - 1]([next.Trim()])
+                            : NewText(null, next.Trim(), null);
+                    var last = rows[^1][^1];
+                    rows[^1][^1] = last switch
+                    {
+                        Text lt when line is Text le => MergeTexts([lt, le]),
+                        Paragraph lt when line is Paragraph le => lt with
+                        {
+                            Children = lt.Children.Concat(le.Children).ToList(),
+                        },
+                        Paragraph lp => lp with
+                        {
+                            Children = lp
+                                .Children.Concat(
+                                    [line is Paragraph lpe ? UnwrapElementIfPossible(lpe) : line]
+                                )
+                                .ToList(),
+                        },
+                        _ => UnwrapElementIfPossible(
+                            new Paragraph(
+                                [last, line],
+                                new Dictionary<string, string> { ["nowrap"] = "true" }
+                            )
+                        ),
+                    };
+                    continue;
+                }
                 if (next.Length > 1 && next.IndexOf('|', 2) > 0) // single line row
                 {
                     // todo: https://docs.asciidoctor.org/asciidoc/latest/tables/format-cell-content/

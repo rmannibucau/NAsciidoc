@@ -1,10 +1,45 @@
 using System.Collections.Immutable;
+using System.Text.Json;
 using NAsciidoc.Model;
 
 namespace NAsciidoc.Parser;
 
 public class ParserTests
 {
+    [Fact]
+    public void TableWithContinuation() // crd-ref-docs uses this kind of formatting
+    {
+        var body = new Parser().ParseBody(
+            new Reader(
+                """
+                [cols="20a,50a,15a,15a", options="header"]
+                |===
+                | Field | Description | Default | Validation
+                | *`foo`* string | Foo. + |  | MaxLength: 10 +
+                MinLength: 3 +
+                Pattern: `^[A-Z]$` +
+
+                | *`bar`* string | Bar. + |  | MaxLength: 10 +
+                MinLength: 3 +
+                Pattern: `^[A-Z]$` +
+
+                |===
+                """.ReplaceLineEndings("\n").Split('\n')
+            )
+        );
+        Assert.Multiple(() =>
+        {
+            Assert.Single(body.Children);
+
+            var table = Assert.IsType<Table>(body.Children[0]);
+            Assert.Equal(3, table.Elements.Count);
+            foreach (var it in table.Elements)
+            {
+                Assert.Equal(4, it.Count);
+            }
+        });
+    }
+
     [Fact]
     public void ParseHeader()
     {
