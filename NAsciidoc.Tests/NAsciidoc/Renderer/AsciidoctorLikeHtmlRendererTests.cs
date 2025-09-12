@@ -913,7 +913,7 @@ public class AsciidoctorLikeHtmlRendererTests
     {
         AssertRenderingContent(
             """
-            [cols="2*a", options="header"]
+            [cols="2*a"]
             .My Table Label
             |===    
             | Key

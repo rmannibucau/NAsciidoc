@@ -144,7 +144,14 @@ namespace NAsciidoc.Parser
                 }
                 else
                 {
-                    collector.TryAdd(defaultKey, keyValue);
+                    // skip quoting there until we forward it in options maybe
+                    collector.TryAdd(
+                        defaultKey,
+                        keyValue.StartsWith("$$", StringComparison.Ordinal)
+                        && keyValue.EndsWith("$$", StringComparison.Ordinal)
+                            ? keyValue[2..^2]
+                            : keyValue
+                    );
                 }
             }
             else
@@ -1760,6 +1767,7 @@ namespace NAsciidoc.Parser
                                 }
                             }
 
+                            var offset = 0;
                             if (backward >= 0 && backward < i)
                             { // start by assuming it a link then fallback on a macro
                                 var optionsPrefix = line[backward..i];
@@ -1768,16 +1776,26 @@ namespace NAsciidoc.Parser
                                     FlushText(elements, line[start..backward]);
                                 }
 
+                                if (
+                                    optionsPrefix.StartsWith("__", StringComparison.Ordinal)
+                                    && line[end..].StartsWith("]__", StringComparison.Ordinal)
+                                )
+                                {
+                                    optionsPrefix = optionsPrefix[2..];
+                                    offset = 2;
+                                }
+
                                 var macroMarker = optionsPrefix.IndexOf(
                                     ':',
                                     StringComparison.Ordinal
                                 );
+
                                 if (macroMarker > 0 && !IsLink(optionsPrefix))
                                 {
                                     var inlined =
                                         optionsPrefix.Length <= macroMarker + 1
                                         || optionsPrefix[macroMarker + 1] != ':';
-                                    var type = optionsPrefix[0..macroMarker];
+                                    var type = optionsPrefix[..macroMarker];
                                     var options = ParseOptions(line[(i + 1)..end].Trim(), type);
                                     var label =
                                         "stem" == type
@@ -1897,8 +1915,8 @@ namespace NAsciidoc.Parser
                                         )
                                     );
                                 }
-                                i = end;
-                                start = end + 1;
+                                i = end + offset;
+                                start = i + 1;
                                 continue;
                             }
 
@@ -3065,10 +3083,10 @@ namespace NAsciidoc.Parser
                 {
                     // simplistic macro handling, mainly for conditional blocks since we still are in headers
                     var stripped = line.Trim();
-                    int options = stripped.IndexOf("[]");
+                    int options = stripped.IndexOf("[]", StringComparison.Ordinal);
                     if (stripped.Length - "[]".Length == options)
                     { // endsWith
-                        int sep = stripped.IndexOf("::");
+                        int sep = stripped.IndexOf("::", StringComparison.Ordinal);
                         if (sep > 0)
                         {
                             var macro = new Macro(
@@ -3077,11 +3095,7 @@ namespace NAsciidoc.Parser
                                 ImmutableDictionary<string, string>.Empty,
                                 false
                             );
-                            if (
-                                "ifdef" == macro.Name
-                                || "ifndef" == macro.Name
-                                || "ifeval" == macro.Name
-                            )
+                            if (macro.Name is "ifdef" or "ifndef" or "ifeval")
                             {
                                 var block = ReadIfBlock(reader);
 

@@ -1,11 +1,42 @@
 using System.Collections.Immutable;
-using System.Text.Json;
 using NAsciidoc.Model;
 
 namespace NAsciidoc.Parser;
 
 public class ParserTests
 {
+    [Fact]
+    public void DoubleDollarAndQuotingForMacro()
+    {
+        var body = new Parser().ParseBody(
+            new Reader(["xref:foo[$$bar$$]", "__link:https://foo.bar[$$dummy$$]__"])
+        );
+        Assert.Equivalent(
+            new List<IElement>
+            {
+                new Paragraph(
+                    new List<IElement>
+                    {
+                        new Macro(
+                            "xref",
+                            "foo",
+                            new Dictionary<string, string> { [string.Empty] = "bar" },
+                            true
+                        ),
+                        new Macro(
+                            "link",
+                            "https://foo.bar",
+                            new Dictionary<string, string> { [string.Empty] = "dummy" },
+                            true
+                        ),
+                    },
+                    ImmutableDictionary<string, string>.Empty
+                ),
+            },
+            body.Children
+        );
+    }
+
     [Fact]
     public void TableWithContinuation() // crd-ref-docs uses this kind of formatting
     {
