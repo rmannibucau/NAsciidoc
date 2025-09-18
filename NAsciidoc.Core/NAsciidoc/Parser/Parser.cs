@@ -2465,7 +2465,7 @@ namespace NAsciidoc.Parser
                 var cells = new List<IElement>();
 
                 // FIXME: for now only tolerate to merge last cell
-                if (!next.TrimStart().StartsWith('|') && rows.Count > 0 && rows[^1].Count > 0)
+                if (!IsNewTableLine(next) && rows.Count > 0 && rows[^1].Count > 0)
                 {
                     var line =
                         cellParser.Count > rows[^1].Count - 1
@@ -2501,39 +2501,120 @@ namespace NAsciidoc.Parser
                     // todo: https://docs.asciidoctor.org/asciidoc/latest/tables/format-cell-content/
                     //       for now it is only at cols attribute level
 
-                    int cellIdx = 0;
-                    int last = 1; // line starts with '|'
-                    int nextSep = next.IndexOf('|', last);
+                    var cellIdx = 0;
+                    var last = next.IndexOf('|');
+                    var nextSep = next.IndexOf('|', last + 1);
                     while (nextSep > 0)
                     {
-                        var content = next[last..nextSep].Trim();
-                        cells.Add(
-                            cellParser.Count > cellIdx
-                                ? cellParser[cellIdx++]([content])
-                                : NewText(null, content.Trim(), null)
-                        );
+                        var previousSpace =
+                            last == 0 /* fast path */
+                                ? -1
+                                : next.LastIndexOf(' ', last);
+                        var content = next[(last + 1)..nextSep];
+                        // drop formatting of next cell
+                        while (content.Length > 0 && !char.IsWhiteSpace(content[^1]))
+                        {
+                            content = content[..^1];
+                        }
+
+                        Func<IList<string>, IElement>? specificCellFormatter = null;
+                        if (cellIdx == 0 && previousSpace < 0)
+                        {
+                            previousSpace = -1;
+                        }
+                        if (
+                            (previousSpace >= 0 || cellIdx == 0 && previousSpace == -1)
+                            && previousSpace + 1 < last
+                        )
+                        {
+                            var style = next[(previousSpace + 1)..last].Trim();
+                            specificCellFormatter = ToTableCellFormatter(
+                                style,
+                                resolver,
+                                currentAttributes,
+                                // todo: handle alignment
+                                ImmutableDictionary<string, string>.Empty
+                            );
+                        }
+
+                        content = content.Trim();
+
+                        var cell =
+                            specificCellFormatter is not null ? specificCellFormatter([content])
+                            : cellParser.Count > cellIdx ? cellParser[cellIdx]([content])
+                            : NewText(null, content, null);
+                        cellIdx++;
+                        cells.Add(cell);
                         last = nextSep + 1;
                         nextSep = next.IndexOf('|', last);
                     }
                     if (last < next.Length)
                     {
+                        var previousSpace =
+                            last <= 1 /* fast path */
+                                ? -1
+                                : next.LastIndexOf(' ', last - 1);
                         var end = next[last..];
+                        while (end.Length > 0 && char.IsWhiteSpace(end[^1]))
+                        {
+                            end = end[..^1];
+                        }
+                        Func<IList<string>, IElement>? specificCellFormatter = null;
+                        if (cellIdx == 0 && previousSpace < 0)
+                        {
+                            previousSpace = -1;
+                        }
+                        if (
+                            (previousSpace >= 0 || cellIdx == 0 && previousSpace == -1)
+                            && previousSpace + 1 < last - 1
+                        )
+                        {
+                            var style = next[(previousSpace + 1)..(last - 1)].Trim();
+                            if (style.Length > 0)
+                            {
+                                specificCellFormatter = ToTableCellFormatter(
+                                    style,
+                                    resolver,
+                                    currentAttributes,
+                                    // todo: handle alignment
+                                    ImmutableDictionary<string, string>.Empty
+                                );
+                            }
+                        }
+
+                        end = end.Trim();
                         cells.Add(
-                            cellParser.Count > cellIdx
-                                ? cellParser[cellIdx]([end])
-                                : NewText(null, end.Trim(), null)
+                            specificCellFormatter is not null ? specificCellFormatter([end])
+                            : cellParser.Count > cellIdx ? cellParser[cellIdx]([end])
+                            : NewText(null, end, null)
                         );
                     }
                 }
                 else // one cell per row
                 {
-                    int cellIdx = 0;
+                    var cellIdx = 0;
                     do
                     {
-                        var content = new List<string> { next[1..].Trim() };
+                        var sep = next.IndexOf('|');
+                        var previousSpace = sep == 0 ? -1 : next.LastIndexOf(' ', sep);
+
+                        Func<IList<string>, IElement>? specificCellFormatter = null;
+                        if (sep > 0)
+                        {
+                            var style = next[..sep].Trim();
+                            specificCellFormatter = ToTableCellFormatter(
+                                style,
+                                resolver,
+                                currentAttributes,
+                                // todo: handle alignment
+                                ImmutableDictionary<string, string>.Empty
+                            );
+                        }
+
+                        var content = new List<string> { next[(sep + 1)..].Trim() };
                         while (
                             (next = reader.NextLine()) != null
-                            && !next.StartsWith('|')
+                            && !IsNewTableLine(next)
                             && !string.IsNullOrWhiteSpace(next)
                         )
                         {
@@ -2545,10 +2626,11 @@ namespace NAsciidoc.Parser
                         }
 
                         cells.Add(
-                            cellParser.Count > cellIdx
-                                ? cellParser[cellIdx++](content)
-                                : NewText(null, string.Join('\n', content).Trim(), null)
+                            specificCellFormatter is not null ? specificCellFormatter(content)
+                            : cellParser.Count > cellIdx ? cellParser[cellIdx](content)
+                            : NewText(null, string.Join('\n', content).Trim(), null)
                         );
+                        cellIdx++;
                     } while (
                         (next = reader.NextLine()) != null
                         && !string.IsNullOrWhiteSpace(next)
@@ -2562,6 +2644,14 @@ namespace NAsciidoc.Parser
                 rows.Add(cells);
             }
             return new Table(rows, options ?? ImmutableDictionary<string, string>.Empty);
+        }
+
+        // we want to tolerate a|.... as being a new line for example
+        private bool IsNewTableLine(string next)
+        {
+            var trimStart = next.TrimStart();
+            var idx = trimStart.IndexOf('|');
+            return idx >= 0 && trimStart.LastIndexOf(' ', idx) < 0;
         }
 
         private Func<IList<string>, IElement> ToTableCellFormatter(

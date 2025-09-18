@@ -115,6 +115,77 @@ public class AsciidoctorLikeHtmlRendererTests
     }
 
     [Fact]
+    public void TableWithInlineStyling() =>
+        AssertRenderingContent(
+            """
+            [cols="1m,1m",role="mt-3 table table-hover table-bordered table-responsive"]
+            |===
+            a| *Name* a| *Value*
+            | AAA | BBBBB
+            |===
+            """,
+            """
+            <table class="tableblock frame-all grid-all stretch mt-3 table table-hover table-bordered table-responsive">
+              <colgroup>
+               <col width="50%">
+               <col width="50%">
+              </colgroup>
+              <tbody>
+               <tr>
+                <td>
+            <b>Name</b>    </td>
+                <td>
+            <b>Value</b>    </td>
+               </tr>
+               <tr>
+                <td>
+            <code>AAA</code>    </td>
+                <td>
+            <code>BBBBB</code>    </td>
+               </tr>
+              </tbody>
+             </table>
+            """
+        );
+
+    [Fact]
+    public void TableWithMultilineStyling() =>
+        AssertRenderingContent(
+            """
+            [cols="1m,1m",role="mt-3 table table-hover table-bordered table-responsive"]
+            |===
+            a| *Name*
+            a| *Value*
+
+            | AAA
+            | BBBBB
+            |===
+            """,
+            """
+            <table class="tableblock frame-all grid-all stretch mt-3 table table-hover table-bordered table-responsive">
+              <colgroup>
+               <col width="50%">
+               <col width="50%">
+              </colgroup>
+              <tbody>
+               <tr>
+                <td>
+            <b>Name</b>    </td>
+                <td>
+            <b>Value</b>    </td>
+               </tr>
+               <tr>
+                <td>
+            <code>AAA</code>    </td>
+                <td>
+            <code>BBBBB</code>    </td>
+               </tr>
+              </tbody>
+             </table>
+            """
+        );
+
+    [Fact]
     public void CheckList()
     {
         AssertRenderingContent(
