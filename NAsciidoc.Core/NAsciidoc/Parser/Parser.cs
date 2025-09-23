@@ -450,8 +450,10 @@ namespace NAsciidoc.Parser
             if (indent is not null)
             {
                 int value = int.Parse(indent);
-                var noIndent = string.Join('\n', content.Select(it => it.TrimStart())); // stripIndent
-                content = (value > 0 ? noIndent.PadLeft(value) : noIndent).Split('\n').ToList();
+                var noIndent = content.Select(it => it.TrimStart()); // stripIndent
+                content = (
+                    value > 0 ? [.. noIndent.Select(line => line.PadLeft(value))] : noIndent
+                ).ToList();
             }
 
             if (parse)
