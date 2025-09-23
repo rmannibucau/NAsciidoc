@@ -403,15 +403,29 @@ namespace NAsciidoc.Parser
                 : (macro.Options.TryGetValue("tags", out var t2) ? t2 : null);
             if (tags is not null)
             {
-                var src = content;
+                var trimmed = content.Select(it => it.Trim()).ToList();
                 content = tags.Split(",")
                     .Select(it => it.Trim())
                     .Where(it => !string.IsNullOrWhiteSpace(it))
                     .SelectMany(tag =>
                     {
-                        int from = src.IndexOf("# tag::" + tag + "[]");
-                        int to = src.IndexOf("# end::" + tag + "[]");
-                        return to > from && from > 0 ? src.GetRange(from + 1, to) : [];
+                        var from = trimmed.IndexOf("# tag::" + tag + "[]");
+                        if (from <= 0)
+                        {
+                            var searched = " tag::" + tag + "[]";
+                            from = content
+                                .Select((it, idx) => it.Contains(searched) ? idx : -1)
+                                .Max();
+                        }
+                        var to = trimmed.IndexOf("# end::" + tag + "[]");
+                        if (to <= 0)
+                        {
+                            var searched = " end::" + tag + "[]";
+                            to = content
+                                .Select((it, idx) => it.Contains(searched) ? idx : -1)
+                                .Max();
+                        }
+                        return to > from && from > 0 ? content[(from + 1)..to] : [];
                     })
                     .ToList();
             }
