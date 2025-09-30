@@ -1320,10 +1320,15 @@ public class AsciidoctorLikeHtmlRendererTests
     }
 
     [Fact]
-    public void XRef()
-    {
+    public void XRef() =>
         AssertRenderingContent("xref:foo.adoc[Bar]", " <a href=\"foo.html\">Bar</a>\n");
-    }
+
+    [Fact]
+    public void XRefId() => AssertRenderingContent("xref:foo[Bar]", " <a href=\"#foo\">Bar</a>\n");
+
+    [Fact]
+    public void XRefPageAndId() =>
+        AssertRenderingContent("xref:foo.adoc#dummy[Bar]", " <a href=\"foo.html#dummy\">Bar</a>\n");
 
     [Fact]
     public void EmbeddedImage()

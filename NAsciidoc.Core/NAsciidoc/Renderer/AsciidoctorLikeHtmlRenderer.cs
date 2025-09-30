@@ -1089,7 +1089,13 @@ public class AsciidoctorLikeHtmlRenderer : Visitor<string>
     protected virtual void VisitXref(Macro element)
     {
         var target = element.Label;
-        int anchor = target.LastIndexOf('#');
+        if (!target.Contains('.') && !target.StartsWith('#')) // it is an id
+        {
+            VisitXref(element with { Label = $"#{element.Label}" });
+            return;
+        }
+
+        var anchor = target.LastIndexOf('#');
         if (anchor > 0)
         {
             var page = target[..anchor];
@@ -1100,8 +1106,9 @@ public class AsciidoctorLikeHtmlRenderer : Visitor<string>
         }
         else if (target.EndsWith(".adoc"))
         {
-            target = target[..(target.Length - ".adoc".Length)] + ".html";
+            target = target[..^".adoc".Length] + ".html";
         }
+
         element.Options.TryGetValue("", out var label);
         builder
             .Append(" <a href=\"")
