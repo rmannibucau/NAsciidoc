@@ -115,6 +115,144 @@ public class AsciidoctorLikeHtmlRendererTests
     }
 
     [Fact]
+    public void KubeBuilderGen() =>
+        AssertRenderingContent(
+            """
+            [cols="20a,50a,15a,15a", options="header"]
+            |===
+            | Field | Description | Default | Validation
+            | *`kind`* __string__ | Kind is a string value representing the REST resource this object represents. +
+            Servers may infer this from the endpoint the client submits requests to. +
+            Cannot be updated. +
+            In CamelCase. +
+            More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds + |  |
+            | *`apiVersion`* __string__ | APIVersion defines the versioned schema of this representation of an object. +
+            Servers should convert recognized schemas to the latest internal value, and +
+            may reject unrecognized values. +
+            More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources + |  | 
+            | *`metadata`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v/#objectmeta-v1-meta[$$ObjectMeta$$]__ | Refer to Kubernetes API documentation for fields of `metadata`.
+             |  | 
+            | *`spec`* __xref:#k8s-api-foo-api-v1alpha1-myspec[$$MySpec$$]__ | spec defines the desired state of My + |  |  
+            |===
+            """,
+            """
+            <table class="tableblock frame-all grid-all stretch">
+              <colgroup>
+               <col width="20%">
+               <col width="50%">
+               <col width="15%">
+               <col width="15%">
+              </colgroup>
+              <thead>
+               <tr>
+                <th>
+            Field    </th>
+                <th>
+            Description    </th>
+                <th>
+            Default    </th>
+                <th>
+            Validation    </th>
+               </tr>
+              </thead>
+              <tbody>
+               <tr>
+                <td>
+             <div class="paragraph">
+            <code>kind</code>string </div>
+                </td>
+                <td>
+             <div class="paragraph">
+            Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info:  <a href="https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds">https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds</a>
+             <br>
+             </div>
+                </td>
+                <td>
+             <div class="paragraph">
+             <p></p>
+             </div>
+                </td>
+                <td>
+             <div class="paragraph">
+             <p></p>
+             </div>
+                </td>
+               </tr>
+               <tr>
+                <td>
+             <div class="paragraph">
+             <p><code>apiVersion</code>string</p>
+             </div>
+                </td>
+                <td>
+             <div class="paragraph">
+            APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info:  <a href="https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources">https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources</a>
+             <br>
+             </div>
+                </td>
+                <td>
+             <div class="paragraph">
+             <p></p>
+             </div>
+                </td>
+                <td>
+             <div class="paragraph">
+             <p></p>
+             </div>
+                </td>
+               </tr>
+               <tr>
+                <td>
+             <div class="paragraph">
+             <p><code>metadata</code> <a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v/#objectmeta-v1-meta">ObjectMeta</a>
+            </p>
+             </div>
+                </td>
+                <td>
+             <div class="paragraph">
+             <p>Refer to Kubernetes API documentation for fields of <code>metadata</code>.</p>
+             </div>
+                </td>
+                <td>
+             <div class="paragraph">
+             <p></p>
+             </div>
+                </td>
+                <td>
+             <div class="paragraph">
+             <p></p>
+             </div>
+                </td>
+               </tr>
+               <tr>
+                <td>
+             <div class="paragraph">
+             <p><code>spec</code> <a href="#k8s-api-foo-api-v1alpha1-myspec">MySpec</a>
+            </p>
+             </div>
+                </td>
+                <td>
+             <div class="paragraph">
+            spec defines the desired state of My <br>
+             </div>
+                </td>
+                <td>
+             <div class="paragraph">
+             <p></p>
+             </div>
+                </td>
+                <td>
+             <div class="paragraph">
+             <p></p>
+             </div>
+                </td>
+               </tr>
+              </tbody>
+             </table>
+            """
+        );
+
+    [Fact]
     public void TableWithInlineStyling() =>
         AssertRenderingContent(
             """

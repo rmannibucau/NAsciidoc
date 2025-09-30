@@ -2473,12 +2473,29 @@ namespace NAsciidoc.Parser
                 ?? []
                 : [];
 
-            var rows = new List<IList<IElement>>(4);
+            var rows = new List<IList<IElement>>(Math.Max(2, cellParser.Count));
             string? next;
+            var useLastCells = false;
             while (token != (next = reader.SkipCommentsAndEmptyLines()) && next is not null)
             {
+                var isUseLastCells = useLastCells;
+                while (next.EndsWith(" +"))
+                {
+                    var more = reader.SkipCommentsAndEmptyLines();
+                    if (more == token || (more?.TrimStart().StartsWith('|') ?? false))
+                    {
+                        reader.Rewind();
+                        break;
+                    }
+                    else if (more is not null)
+                    {
+                        next = next[..^1].Trim() + ' ' + more;
+                    }
+                }
+
                 next = next.Trim();
-                var cells = new List<IElement>();
+                var cells = useLastCells ? rows[^1] : new List<IElement>();
+                useLastCells = false;
 
                 // FIXME: for now only tolerate to merge last cell
                 if (!IsNewTableLine(next) && rows.Count > 0 && rows[^1].Count > 0)
@@ -2512,6 +2529,7 @@ namespace NAsciidoc.Parser
                     };
                     continue;
                 }
+
                 if (next.Length > 1 && next.IndexOf('|', 2) > 0) // single line row
                 {
                     // todo: https://docs.asciidoctor.org/asciidoc/latest/tables/format-cell-content/
@@ -2538,6 +2556,7 @@ namespace NAsciidoc.Parser
                         {
                             previousSpace = -1;
                         }
+
                         if (
                             (previousSpace >= 0 || cellIdx == 0 && previousSpace == -1)
                             && previousSpace + 1 < last
@@ -2564,7 +2583,8 @@ namespace NAsciidoc.Parser
                         last = nextSep + 1;
                         nextSep = next.IndexOf('|', last);
                     }
-                    if (last < next.Length)
+
+                    if (last <= next.Length)
                     {
                         var previousSpace =
                             last <= 1 /* fast path */
@@ -2575,11 +2595,13 @@ namespace NAsciidoc.Parser
                         {
                             end = end[..^1];
                         }
+
                         Func<IList<string>, IElement>? specificCellFormatter = null;
                         if (cellIdx == 0 && previousSpace < 0)
                         {
                             previousSpace = -1;
                         }
+
                         if (
                             (previousSpace >= 0 || cellIdx == 0 && previousSpace == -1)
                             && previousSpace + 1 < last - 1
@@ -2604,6 +2626,15 @@ namespace NAsciidoc.Parser
                             : cellParser.Count > cellIdx ? cellParser[cellIdx]([end])
                             : NewText(null, end, null)
                         );
+                    }
+
+                    if (cells.Count < cellParser.Count &&
+                        (next = reader.NextLine()) is not null &&
+                        !next.StartsWith('|') &&
+                        next.TrimStart().StartsWith('|'))
+                    {
+                        useLastCells = true;
+                        reader.Rewind();
                     }
                 }
                 else // one cell per row
@@ -2636,6 +2667,7 @@ namespace NAsciidoc.Parser
                         {
                             content.Add(next.Trim());
                         }
+
                         if (next != null)
                         {
                             reader.Rewind();
@@ -2652,12 +2684,17 @@ namespace NAsciidoc.Parser
                         && !string.IsNullOrWhiteSpace(next)
                         && !next.StartsWith("|===")
                     );
+
                     if (next != null && next.StartsWith("|"))
                     {
                         reader.Rewind();
                     }
                 }
-                rows.Add(cells);
+
+                if (!isUseLastCells)
+                {
+                    rows.Add(cells);
+                }
             }
             return new Table(rows, options ?? ImmutableDictionary<string, string>.Empty);
         }
