@@ -115,6 +115,89 @@ public class AsciidoctorLikeHtmlRendererTests
     }
 
     [Fact]
+    public void ListInTable() =>
+        AssertRenderingContent(
+            """
+            [cols="20a,50a,15a,15a", options="header"]
+            |===
+            | Field | Description | Default | Validation
+            | *`conditions`* __link:https://kubernetes.io/docs/reference/generated/kubernetes-api/v/#condition-v1-meta[$$Condition$$] array__ | conditions represent the current state of the OrangeDamEventTopics resource. +
+            Each condition has a unique type and reflects the status of a specific aspect of the resource. +
+
+            Standard condition types include: +
+            - "Available": the resource is fully functional +
+            - "Progressing": the resource is being created or updated +
+            - "Degraded": the resource failed to reach or maintain its desired state +
+
+            The status of each condition is one of True, False, or Unknown. + |  | 
+            |===
+            """,
+            """
+            <table class="tableblock frame-all grid-all stretch">
+              <colgroup>
+               <col width="20%">
+               <col width="50%">
+               <col width="15%">
+               <col width="15%">
+              </colgroup>
+              <thead>
+               <tr>
+                <th>
+            Field    </th>
+                <th>
+            Description    </th>
+                <th>
+            Default    </th>
+                <th>
+            Validation    </th>
+               </tr>
+              </thead>
+              <tbody>
+               <tr>
+                <td>
+             <div class="paragraph">
+            <code>conditions</code> array </div>
+                </td>
+                <td>
+             <div class="paragraph">
+            conditions represent the current state of the OrangeDamEventTopics resource. Each condition has a unique type and reflects the status of a specific aspect of the resource. Standard condition types include: <div class="ulist">
+             <ul>
+              <li>
+             <p>
+            &quot;Available&quot;: the resource is fully functional
+             </p>
+              </li>
+              <li>
+             <p>
+            &quot;Progressing&quot;: the resource is being created or updated
+             </p>
+              </li>
+              <li>
+             <div class="paragraph">
+            &quot;Degraded&quot;: the resource failed to reach or maintain its desired state The status of each condition is one of True, False, or Unknown. <br>
+             </div>
+              </li>
+             </ul>
+             </div>
+             </div>
+                </td>
+                <td>
+             <div class="paragraph">
+             <p></p>
+             </div>
+                </td>
+                <td>
+             <div class="paragraph">
+             <p></p>
+             </div>
+                </td>
+               </tr>
+              </tbody>
+             </table>
+            """
+        );
+
+    [Fact]
     public void KubeBuilderGen() =>
         AssertRenderingContent(
             """

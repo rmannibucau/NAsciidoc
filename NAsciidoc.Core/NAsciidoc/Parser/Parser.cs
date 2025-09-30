@@ -30,7 +30,7 @@ namespace NAsciidoc.Parser
         [GeneratedRegex("^:(?<name>[^\\n\\t:]+):( +(?<value>.+))? *$")]
         private static partial Regex AttributeDefinitionRegex();
 
-        [GeneratedRegex("^(?<wildcard>\\*+) .+")]
+        [GeneratedRegex("^(?<wildcard>((\\*+)|(\\-+))) .+")]
         private static partial Regex UnOrderedListPrefix();
 
         [GeneratedRegex("^[0-9]*(?<dots>\\.+) .+")]
@@ -1530,14 +1530,20 @@ namespace NAsciidoc.Parser
                         }
                     }
 
-                    if (line.StartsWith("*"))
+                    if (line.StartsWith('*') || line.StartsWith('-'))
                     {
                         var matcher = UnOrderedListPrefix().Match(line);
                         if (matcher.Success && matcher.Groups["wildcard"].Length == 1)
                         {
                             reader!.Rewind();
                             elements.Add(
-                                ParseUnorderedList(reader, null, "* ", resolver, currentAttributes)
+                                ParseUnorderedList(
+                                    reader,
+                                    null,
+                                    $"{line[0]} ",
+                                    resolver,
+                                    currentAttributes
+                                )
                             );
                             i = line.Length;
                             start = i;
@@ -2490,12 +2496,12 @@ namespace NAsciidoc.Parser
 
                     if (more is not null)
                     {
-                        next = next[..^1].Trim() + ' ' + more;
+                        next = next[..^1].Trim() + '\n' + more;
                     }
                 }
 
                 next = next.Trim();
-                var cells = useLastCells ? rows[^1] : new List<IElement>();
+                var cells = useLastCells ? rows[^1] : [];
                 useLastCells = false;
 
                 // FIXME: for now only tolerate to merge last cell
@@ -2503,7 +2509,7 @@ namespace NAsciidoc.Parser
                 {
                     var line =
                         cellParser.Count > rows[^1].Count - 1
-                            ? cellParser[rows[^1].Count - 1]([next.Trim()])
+                            ? cellParser[rows[^1].Count - 1](next.Trim().Split('\n'))
                             : NewText(null, next.Trim(), null);
                     var last = rows[^1][^1];
                     rows[^1][^1] = last switch
@@ -2577,7 +2583,7 @@ namespace NAsciidoc.Parser
 
                         var cell =
                             specificCellFormatter is not null ? specificCellFormatter([content])
-                            : cellParser.Count > cellIdx ? cellParser[cellIdx]([content])
+                            : cellParser.Count > cellIdx ? cellParser[cellIdx](content.Split('\n'))
                             : NewText(null, content, null);
                         cellIdx++;
                         cells.Add(cell);
@@ -2624,7 +2630,7 @@ namespace NAsciidoc.Parser
                         end = end.Trim();
                         cells.Add(
                             specificCellFormatter is not null ? specificCellFormatter([end])
-                            : cellParser.Count > cellIdx ? cellParser[cellIdx]([end])
+                            : cellParser.Count > cellIdx ? cellParser[cellIdx](end.Split('\n'))
                             : NewText(null, end, null)
                         );
                     }
