@@ -2487,7 +2487,8 @@ namespace NAsciidoc.Parser
                         reader.Rewind();
                         break;
                     }
-                    else if (more is not null)
+
+                    if (more is not null)
                     {
                         next = next[..^1].Trim() + ' ' + more;
                     }
@@ -2628,10 +2629,12 @@ namespace NAsciidoc.Parser
                         );
                     }
 
-                    if (cells.Count < cellParser.Count &&
-                        (next = reader.NextLine()) is not null &&
-                        !next.StartsWith('|') &&
-                        next.TrimStart().StartsWith('|'))
+                    if (
+                        cells.Count < cellParser.Count
+                        && (next = reader.NextLine()) is not null
+                        && !next.StartsWith('|')
+                        && next.TrimStart().StartsWith('|')
+                    )
                     {
                         useLastCells = true;
                         reader.Rewind();
