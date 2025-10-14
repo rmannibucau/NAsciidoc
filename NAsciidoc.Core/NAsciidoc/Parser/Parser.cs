@@ -2547,10 +2547,6 @@ namespace NAsciidoc.Parser
                     var nextSep = next.IndexOf('|', last + 1);
                     while (nextSep > 0)
                     {
-                        var previousSpace =
-                            last == 0 /* fast path */
-                                ? -1
-                                : next.LastIndexOf(' ', last);
                         var content = next[(last + 1)..nextSep];
                         // drop formatting of next cell
                         while (content.Length > 0 && !char.IsWhiteSpace(content[^1]))
@@ -2559,6 +2555,10 @@ namespace NAsciidoc.Parser
                         }
 
                         Func<IList<string>, IElement>? specificCellFormatter = null;
+                        var previousSpace =
+                            last == 1 /* fast path */
+                                ? -1
+                                : next.LastIndexOf(' ', last + 1);
                         if (cellIdx == 0 && previousSpace < 0)
                         {
                             previousSpace = -1;
@@ -2587,17 +2587,17 @@ namespace NAsciidoc.Parser
                             : NewText(null, content, null);
                         cellIdx++;
                         cells.Add(cell);
-                        last = nextSep + 1;
-                        nextSep = next.IndexOf('|', last);
+                        last = nextSep;
+                        nextSep = next.IndexOf('|', last + 1);
                     }
 
-                    if (last <= next.Length)
+                    if (last < next.Length)
                     {
                         var previousSpace =
                             last <= 1 /* fast path */
                                 ? -1
-                                : next.LastIndexOf(' ', last - 1);
-                        var end = next[last..];
+                                : next.LastIndexOf(' ', last);
+                        var end = next[(last+1)..];
                         while (end.Length > 0 && char.IsWhiteSpace(end[^1]))
                         {
                             end = end[..^1];
@@ -2611,10 +2611,10 @@ namespace NAsciidoc.Parser
 
                         if (
                             (previousSpace >= 0 || cellIdx == 0 && previousSpace == -1)
-                            && previousSpace + 1 < last - 1
+                            && previousSpace + 1 == last - 1
                         )
                         {
-                            var style = next[(previousSpace + 1)..(last - 1)].Trim();
+                            var style = next[(previousSpace + 1)..last].Trim();
                             if (style.Length > 0)
                             {
                                 specificCellFormatter = ToTableCellFormatter(

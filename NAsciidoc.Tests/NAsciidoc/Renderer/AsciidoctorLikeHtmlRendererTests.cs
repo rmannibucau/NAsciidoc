@@ -197,6 +197,57 @@ public class AsciidoctorLikeHtmlRendererTests
             """
         );
 
+
+    [Fact]
+    public void TableNoTruncation() =>
+        AssertRenderingContent(
+            """
+            [cols="2m,2m,5",options="header",role="table table-hover table-bordered table-sm"]
+            |===
+            |JSON Name |Type |Description
+            |items |array |List of items.
+            |items.name |string |name
+            |===
+            """,
+            """
+            <table class="tableblock frame-all grid-all stretch table table-hover table-bordered table-sm">
+              <colgroup>
+               <col width="22%">
+               <col width="22%">
+               <col width="55%">
+              </colgroup>
+              <thead>
+               <tr>
+                <th>
+            JSON Name    </th>
+                <th>
+            Type    </th>
+                <th>
+            Description    </th>
+               </tr>
+              </thead>
+              <tbody>
+               <tr>
+                <td>
+            <code>items</code>    </td>
+                <td>
+            <code>array</code>    </td>
+                <td>
+            List of items.    </td>
+               </tr>
+               <tr>
+                <td>
+            <code>items.name</code>    </td>
+                <td>
+            <code>string</code>    </td>
+                <td>
+            name    </td>
+               </tr>
+              </tbody>
+             </table>
+            """
+        );
+
     [Fact]
     public void KubeBuilderGen() =>
         AssertRenderingContent(
