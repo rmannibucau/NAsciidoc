@@ -15,5 +15,6 @@ public record Text(IList<Text.Styling> Style, string Value, IDictionary<string, 
         Mark,
         Sub,
         Sup,
+        Strikethrough,
     }
 }

@@ -1793,6 +1793,150 @@ public class AsciidoctorLikeHtmlRendererTests
         Assert.Equal(expected, actual);
     }
 
+    [Fact]
+    public void MarkdownBold()
+    {
+        AssertRenderingContent(
+            "**bold** text",
+            """
+             <div class="paragraph">
+             <p><b>bold</b> text</p>
+             </div>
+            """
+        );
+    }
+
+    [Fact]
+    public void MarkdownStrikethrough()
+    {
+        AssertRenderingContent(
+            "~~deleted~~ text",
+            """
+             <div class="paragraph">
+             <p><del>deleted</del> text</p>
+             </div>
+            """
+        );
+    }
+
+    [Fact]
+    public void MarkdownLinkRendering()
+    {
+        AssertRenderingContent(
+            "A [link](https://example.com) here",
+            """
+             <div class="paragraph">
+             <p>A  <a href="https://example.com">link</a>
+             here</p>
+             </div>
+            """
+        );
+    }
+
+    [Fact]
+    public void MarkdownImageRendering()
+    {
+        AssertRenderingContent(
+            "An ![alt](image.png) inline",
+            """
+             <div class="paragraph">
+             <p>An  <img src="image.png" alt="alt">
+             inline</p>
+             </div>
+            """
+        );
+    }
+
+    [Fact]
+    public void MarkdownHeadingRendering()
+    {
+        AssertRenderingContent(
+            "# Title\n\nContent",
+            """
+             <div class="sect0" id="_title">
+              <h1>Title</h1>
+             <div class="sectionbody">
+             <div class="paragraph">
+             <p>
+            Content
+             </p>
+             </div>
+             </div>
+             </div>
+            """
+        );
+    }
+
+    [Fact]
+    public void MarkdownHorizontalRuleRendering()
+    {
+        AssertRenderingContent(
+            "Before\n\n---\n\nAfter",
+            """
+             <div class="paragraph">
+             <p>
+            Before
+             </p>
+             </div>
+
+              <hr />
+             <div class="paragraph">
+             <p>
+            After
+             </p>
+             </div>
+            """
+        );
+    }
+
+    [Fact]
+    public void SidebarBlockRendering()
+    {
+        AssertRenderingContent(
+            "****\nSidebar text\n****",
+            """
+             <div class="sidebarblock">
+              <div class="content">
+            Sidebar text  </div>
+             </div>
+            """
+        );
+    }
+
+    [Fact]
+    public void ExampleBlockRendering()
+    {
+        AssertRenderingContent(
+            "[example]\n====\nExample text\n====",
+            """
+             <div class="exampleblock">
+              <div class="content">
+            Example text  </div>
+             </div>
+            """
+        );
+    }
+
+    [Fact]
+    public void CommentBlockRendering()
+    {
+        AssertRenderingContent(
+            "Visible\n////\nInvisible\n////\nStill visible",
+            """
+             <div class="paragraph">
+             <p>
+            Visible
+             </p>
+             </div>
+             <div class="paragraph">
+             <p>
+            Still visible
+             </p>
+             </div>
+            """
+        );
+    }
+
     private void AssertRenderingContent(string adoc, string html, string? work = null)
     {
         var globalAttributes = new Dictionary<string, string>

@@ -3191,4 +3191,254 @@ public class ParserTests
             File.Delete(tmpFile);
         }
     }
+
+    [Fact]
+    public void MarkdownBold()
+    {
+        var body = new Parser().ParseBody(
+            new Reader(["This is **bold** text"])
+        );
+        Assert.Equivalent(
+            new List<IElement>
+            {
+                new Paragraph(
+                    new List<IElement>
+                    {
+                        new Text(
+                            ImmutableList<Text.Styling>.Empty,
+                            "This is ",
+                            ImmutableDictionary<string, string>.Empty
+                        ),
+                        new Text(
+                            new List<Text.Styling> { Text.Styling.Bold },
+                            "bold",
+                            ImmutableDictionary<string, string>.Empty
+                        ),
+                        new Text(
+                            ImmutableList<Text.Styling>.Empty,
+                            " text",
+                            ImmutableDictionary<string, string>.Empty
+                        ),
+                    },
+                    ImmutableDictionary<string, string>.Empty
+                ),
+            },
+            body.Children
+        );
+    }
+
+    [Fact]
+    public void MarkdownStrikethrough()
+    {
+        var body = new Parser().ParseBody(
+            new Reader(["This is ~~deleted~~ text"])
+        );
+        Assert.Equivalent(
+            new List<IElement>
+            {
+                new Paragraph(
+                    new List<IElement>
+                    {
+                        new Text(
+                            ImmutableList<Text.Styling>.Empty,
+                            "This is ",
+                            ImmutableDictionary<string, string>.Empty
+                        ),
+                        new Text(
+                            new List<Text.Styling> { Text.Styling.Strikethrough },
+                            "deleted",
+                            ImmutableDictionary<string, string>.Empty
+                        ),
+                        new Text(
+                            ImmutableList<Text.Styling>.Empty,
+                            " text",
+                            ImmutableDictionary<string, string>.Empty
+                        ),
+                    },
+                    ImmutableDictionary<string, string>.Empty
+                ),
+            },
+            body.Children
+        );
+    }
+
+    [Fact]
+    public void MarkdownLink()
+    {
+        var body = new Parser().ParseBody(
+            new Reader(["A [link](https://example.com) here"])
+        );
+        Assert.Equivalent(
+            new List<IElement>
+            {
+                new Paragraph(
+                    new List<IElement>
+                    {
+                        new Text(
+                            ImmutableList<Text.Styling>.Empty,
+                            "A ",
+                            ImmutableDictionary<string, string>.Empty
+                        ),
+                        new Link(
+                            "https://example.com",
+                            "link",
+                            ImmutableDictionary<string, string>.Empty
+                        ),
+                        new Text(
+                            ImmutableList<Text.Styling>.Empty,
+                            " here",
+                            ImmutableDictionary<string, string>.Empty
+                        ),
+                    },
+                    ImmutableDictionary<string, string>.Empty
+                ),
+            },
+            body.Children
+        );
+    }
+
+    [Fact]
+    public void MarkdownImage()
+    {
+        var body = new Parser().ParseBody(
+            new Reader(["An ![alt](image.png) inline"])
+        );
+        Assert.Equivalent(
+            new List<IElement>
+            {
+                new Paragraph(
+                    new List<IElement>
+                    {
+                        new Text(
+                            ImmutableList<Text.Styling>.Empty,
+                            "An ",
+                            ImmutableDictionary<string, string>.Empty
+                        ),
+                        new Macro(
+                            "image",
+                            "image.png",
+                            new Dictionary<string, string> { { string.Empty, "alt" } },
+                            true
+                        ),
+                        new Text(
+                            ImmutableList<Text.Styling>.Empty,
+                            " inline",
+                            ImmutableDictionary<string, string>.Empty
+                        ),
+                    },
+                    ImmutableDictionary<string, string>.Empty
+                ),
+            },
+            body.Children
+        );
+    }
+
+    [Fact]
+    public void MarkdownHeadings()
+    {
+        var body = new Parser().ParseBody(
+            new Reader(["# H1", "## H2", "### H3", "#### H4", "##### H5", "###### H6"])
+        );
+        Assert.Single(body.Children);
+        Assert.Equal(IElement.ElementType.Section, body.Children[0].Type());
+        var s1 = (Section)body.Children[0];
+        Assert.Equal(1, s1.Level);
+        Assert.Single(s1.Children);
+        var s2 = (Section)s1.Children[0];
+        Assert.Equal(2, s2.Level);
+        Assert.Single(s2.Children);
+        var s3 = (Section)s2.Children[0];
+        Assert.Equal(3, s3.Level);
+        Assert.Single(s3.Children);
+        var s4 = (Section)s3.Children[0];
+        Assert.Equal(4, s4.Level);
+        Assert.Single(s4.Children);
+        var s5 = (Section)s4.Children[0];
+        Assert.Equal(5, s5.Level);
+        Assert.Single(s5.Children);
+        var s6 = (Section)s5.Children[0];
+        Assert.Equal(6, s6.Level);
+    }
+
+    [Fact]
+    public void MarkdownHorizontalRules()
+    {
+        var body = new Parser().ParseBody(
+            new Reader(["Text1", "---", "Text2", "***", "Text3", "___", "Text4"])
+        );
+        Assert.Equivalent(
+            new List<IElement>
+            {
+                new Text(ImmutableList<Text.Styling>.Empty, "Text1", new Dictionary<string, string>()),
+                new HorizontalRule(ImmutableDictionary<string, string>.Empty),
+                new Text(ImmutableList<Text.Styling>.Empty, "Text2", new Dictionary<string, string>()),
+                new HorizontalRule(ImmutableDictionary<string, string>.Empty),
+                new Text(ImmutableList<Text.Styling>.Empty, "Text3", new Dictionary<string, string>()),
+                new HorizontalRule(ImmutableDictionary<string, string>.Empty),
+                new Text(ImmutableList<Text.Styling>.Empty, "Text4", new Dictionary<string, string>()),
+            },
+            body.Children
+        );
+    }
+
+    [Fact]
+    public void MarkdownHardLineBreak()
+    {
+        var body = new Parser().ParseBody(
+            new Reader(["First line  ", "Second line"])
+        );
+        Assert.Equivalent(
+            new List<IElement>
+            {
+                new Paragraph(
+                    new List<IElement>
+                    {
+                        new Text(ImmutableList<Text.Styling>.Empty, "First line", ImmutableDictionary<string, string>.Empty),
+                        new LineBreak(),
+                        new Text(ImmutableList<Text.Styling>.Empty, "Second line", ImmutableDictionary<string, string>.Empty),
+                    },
+                    ImmutableDictionary<string, string>.Empty
+                ),
+            },
+            body.Children
+        );
+    }
+
+    [Fact]
+    public void SidebarBlock()
+    {
+        var body = new Parser().ParseBody(
+            new Reader(["****", "Sidebar content", "****"])
+        );
+        Assert.Single(body.Children);
+        Assert.Equal(IElement.ElementType.OpenBlock, body.Children[0].Type());
+        var sb = (OpenBlock)body.Children[0];
+        Assert.Equal("sidebarblock", sb.Opts()["role"]);
+    }
+
+    [Fact]
+    public void ExampleBlock()
+    {
+        var body = new Parser().ParseBody(
+            new Reader(["[example]", "====", "Example content", "===="])
+        );
+        Assert.Single(body.Children);
+        Assert.Equal(IElement.ElementType.OpenBlock, body.Children[0].Type());
+    }
+
+    [Fact]
+    public void CommentBlock()
+    {
+        var body = new Parser().ParseBody(
+            new Reader(["Visible", "////", "Invisible", "////", "Still visible"])
+        );
+        Assert.Equivalent(
+            new List<IElement>
+            {
+                new Text(ImmutableList<Text.Styling>.Empty, "Visible", new Dictionary<string, string>()),
+                new Text(ImmutableList<Text.Styling>.Empty, "Still visible", new Dictionary<string, string>()),
+            },
+            body.Children
+        );
+    }
 }

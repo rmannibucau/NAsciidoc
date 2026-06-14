@@ -45,6 +45,9 @@ namespace NAsciidoc.Parser
         [GeneratedRegex("<(?<number>\\d+)>")]
         private static partial Regex CallOutRef();
 
+        [GeneratedRegex("^\\|(.+\\|)+$")]
+        private static partial Regex GfmTableRow();
+
         public Parser()
             : this(ImmutableDictionary<string, string>.Empty) { }
 
@@ -1080,7 +1083,7 @@ namespace NAsciidoc.Parser
             };
 
         private bool IsBlock(string strippedLine) =>
-            strippedLine is "----" or "```" or "--" or "++++" or "====";
+            strippedLine is "----" or "```" or "--" or "++++" or "====" or "****" or "////";
 
         private void ReadContinuation(
             Reader reader,
@@ -1331,6 +1334,22 @@ namespace NAsciidoc.Parser
                     reader.Rewind();
                     break;
                 }
+                if (
+                    stopOnEmptyLines
+                    && IsMarkdownHorizontalRule(line.Trim())
+                )
+                {
+                    reader.Rewind();
+                    break;
+                }
+                if (
+                    stopOnEmptyLines
+                    && line.Trim() == "////"
+                )
+                {
+                    while (reader.NextLine() is { } next && next.Trim() != "////") { }
+                    break;
+                }
                 foreach (
                     var it in ParseLine(
                         reader,
@@ -1505,6 +1524,19 @@ namespace NAsciidoc.Parser
                         break;
                     }
 
+                    // CommonMark hard line break (two trailing spaces)
+                    if (
+                        i == line.Length - 2
+                        && line.EndsWith("  ")
+                        && !line.EndsWith(" +")
+                    )
+                    {
+                        FlushText(elements, line[start..i]);
+                        elements.Add(new LineBreak());
+                        start = line.Length;
+                        break;
+                    }
+
                     var admonition = reader is null
                         ? null
                         : ParseAdmonition(reader, line, resolver, currentAttributes);
@@ -1633,6 +1665,31 @@ namespace NAsciidoc.Parser
                     }
                     case '*':
                     {
+                        // **text** (Markdown bold)
+                        if (line.Length > i + 1 && line[i + 1] == '*')
+                        {
+                            var mdEnd = line.IndexOf("**", i + 2, StringComparison.Ordinal);
+                            if (mdEnd > 0)
+                            {
+                                if (start != i)
+                                {
+                                    FlushText(elements, line[start..i]);
+                                }
+                                AddTextElements(
+                                    line,
+                                    i + 1,
+                                    mdEnd,
+                                    elements,
+                                    Text.Styling.Bold,
+                                    null,
+                                    resolver,
+                                    currentAttributes
+                                );
+                                i = mdEnd + 1;
+                                start = mdEnd + 2;
+                                break;
+                            }
+                        }
                         int end = line.IndexOf('*', i + 1);
                         if (end > 0)
                         {
@@ -1681,6 +1738,31 @@ namespace NAsciidoc.Parser
                     }
                     case '~':
                     {
+                        // ~~text~~ (Markdown strikethrough)
+                        if (line.Length > i + 1 && line[i + 1] == '~')
+                        {
+                            var mdEnd = line.IndexOf("~~", i + 2, StringComparison.Ordinal);
+                            if (mdEnd > 0)
+                            {
+                                if (start != i)
+                                {
+                                    FlushText(elements, line[start..i]);
+                                }
+                                AddTextElements(
+                                    line,
+                                    i + 1,
+                                    mdEnd,
+                                    elements,
+                                    Text.Styling.Strikethrough,
+                                    null,
+                                    resolver,
+                                    currentAttributes
+                                );
+                                i = mdEnd + 1;
+                                start = mdEnd + 2;
+                                break;
+                            }
+                        }
                         int end = line.IndexOf('~', i + 1);
                         if (end > 0)
                         {
@@ -1739,7 +1821,30 @@ namespace NAsciidoc.Parser
                             }
                             end = line.IndexOf(']', end + 1);
                         }
-
+ 
+                        // Markdown link [text](url)
+                        if (end > 0 && end + 1 < line.Length && line[end + 1] == '(')
+                        {
+                            var linkEnd = line.IndexOf(')', end + 2);
+                            if (linkEnd > end + 1)
+                            {
+                                if (start != i)
+                                {
+                                    FlushText(elements, line[start..i]);
+                                }
+                                elements.Add(
+                                    new Link(
+                                        line[(end + 2)..linkEnd],
+                                        line[(i + 1)..end],
+                                        ImmutableDictionary<string, string>.Empty
+                                    )
+                                );
+                                i = linkEnd;
+                                start = linkEnd + 1;
+                                break;
+                            }
+                        }
+ 
                         if (
                             end > 0
                             && (
@@ -2034,6 +2139,44 @@ namespace NAsciidoc.Parser
                             );
                             start = end + endString.Length;
                             i = start - 1;
+                        }
+                        break;
+                    }
+                    case '!':
+                    {
+                        // ![alt](url) Markdown image
+                        if (line.Length > i + 1 && line[i + 1] == '[')
+                        {
+                            var closeBracket = line.IndexOf(']', i + 2);
+                            if (
+                                closeBracket > i + 2
+                                && closeBracket + 1 < line.Length
+                                && line[closeBracket + 1] == '('
+                            )
+                            {
+                                var closeParen = line.IndexOf(')', closeBracket + 2);
+                                if (closeParen > closeBracket + 1)
+                                {
+                                    if (start != i)
+                                    {
+                                        FlushText(elements, line[start..i]);
+                                    }
+                                    elements.Add(
+                                        new Macro(
+                                            "image",
+                                            line[(closeBracket + 2)..closeParen],
+                                            new Dictionary<string, string>
+                                            {
+                                                { string.Empty, line[(i + 2)..closeBracket] },
+                                            },
+                                            true
+                                        )
+                                    );
+                                    i = closeParen;
+                                    start = closeParen + 1;
+                                    break;
+                                }
+                            }
                         }
                         break;
                     }
@@ -2793,6 +2936,48 @@ namespace NAsciidoc.Parser
             };
         }
 
+        private static bool IsMarkdownHeading(string line, out string? converted)
+        {
+            var level = 0;
+            while (level < line.Length && line[level] == '#')
+            {
+                level++;
+            }
+            if (
+                level > 0
+                && level <= 6
+                && line.Length > level
+                && char.IsWhiteSpace(line[level])
+            )
+            {
+                converted = new string('=', level) + line[level..];
+                return true;
+            }
+            converted = null;
+            return false;
+        }
+
+        private static bool IsMarkdownHorizontalRule(string stripped)
+        {
+            if (stripped.Length < 3)
+            {
+                return false;
+            }
+            char c = stripped[0];
+            if (c != '-' && c != '*' && c != '_')
+            {
+                return false;
+            }
+            for (int i = 1; i < stripped.Length; i++)
+            {
+                if (stripped[i] != c)
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+
         private IList<IElement> DoParse(
             Reader reader,
             Predicate<string?> continueTest,
@@ -2870,20 +3055,68 @@ namespace NAsciidoc.Parser
                         new Dictionary<string, string> { { "title", next[1..].Trim() } }
                     );
                 }
-                else if (
-                    "====" == stripped
-                    && options is not null
-                    && options.TryGetValue(string.Empty, out var pl)
-                    && MapAdmonitionLevel(pl) is { } level
-                )
+                else if ("====" == stripped && options is not null)
                 {
-                    elements.Add(
-                        ParseAdmonitionBlock(reader, resolver, attributes, options, level)
-                    );
+                    if (
+                        options.TryGetValue(string.Empty, out var pl)
+                        && MapAdmonitionLevel(pl) is { } level
+                    )
+                    {
+                        elements.Add(
+                            ParseAdmonitionBlock(reader, resolver, attributes, options, level)
+                        );
+                    }
+                    else
+                    {
+                        // example block (or other role-based block)
+                        if (!options.ContainsKey("role"))
+                        {
+                            var roleVal = options.TryGetValue(string.Empty, out var emptyKey)
+                                ? emptyKey + "block"
+                                : "exampleblock";
+                            options["role"] = roleVal;
+                        }
+                        var buffer = new List<string>();
+                        while (
+                            (next = reader.NextLine()) != null
+                            && "====" != next.Trim()
+                        )
+                        {
+                            buffer.Add(next);
+                        }
+                        elements.Add(
+                            new OpenBlock(
+                                DoParse(
+                                    new Reader(buffer),
+                                    l => true,
+                                    resolver,
+                                    attributes,
+                                    supportComplexStructures,
+                                    false
+                                ),
+                                options
+                            )
+                        );
+                    }
                     options = null;
                 }
                 else if (next.StartsWith('='))
                 {
+                    reader.Rewind();
+                    elements.Add(
+                        ParseSection(
+                            reader,
+                            options ?? ImmutableDictionary<string, string>.Empty,
+                            resolver,
+                            attributes
+                        )
+                    );
+                    options = null;
+                }
+                else if (IsMarkdownHeading(next, out var mdHeadingLine))
+                {
+                    next = mdHeadingLine!;
+                    reader.SetPreviousValue(next);
                     reader.Rewind();
                     elements.Add(
                         ParseSection(
@@ -2934,12 +3167,6 @@ namespace NAsciidoc.Parser
                     );
                     options = null;
                 }
-                else if (stripped.StartsWith("> "))
-                {
-                    reader.Rewind();
-                    elements.Add(ParseQuote(reader, options, resolver, attributes));
-                    options = null;
-                }
                 else if (stripped.StartsWith("____"))
                 {
                     var buffer = new List<string>();
@@ -2960,6 +3187,64 @@ namespace NAsciidoc.Parser
                             options ?? ImmutableDictionary<string, string>.Empty
                         )
                     );
+                    options = null;
+                }
+                else if (stripped.StartsWith("****"))
+                {
+                    // sidebar block
+                    var sidebarOpts = options ?? ImmutableDictionary<string, string>.Empty;
+                    if (!sidebarOpts.ContainsKey("role"))
+                    {
+                        sidebarOpts = new Dictionary<string, string>(sidebarOpts)
+                        {
+                            { "role", "sidebarblock" },
+                        };
+                    }
+                    var buffer = new List<string>();
+                    while (
+                        (next = reader.NextLine()) != null
+                        && "****" != next.Trim()
+                    )
+                    {
+                        buffer.Add(next);
+                    }
+                    elements.Add(
+                        new OpenBlock(
+                            DoParse(
+                                new Reader(buffer),
+                                l => true,
+                                resolver,
+                                attributes,
+                                supportComplexStructures,
+                                false
+                            ),
+                            sidebarOpts
+                        )
+                    );
+                    options = null;
+                }
+                else if (IsMarkdownHorizontalRule(stripped))
+                {
+                    elements.Add(
+                        new HorizontalRule(options ?? ImmutableDictionary<string, string>.Empty)
+                    );
+                    options = null;
+                }
+                else if (stripped.StartsWith("> "))
+                {
+                    reader.Rewind();
+                    elements.Add(ParseQuote(reader, options, resolver, attributes));
+                    options = null;
+                }
+                else if ("////" == stripped)
+                {
+                    // comment block: consume until closing ////
+                    while (
+                        (next = reader.NextLine()) != null
+                        && "////" != next.Trim()
+                    )
+                    {
+                    }
                     options = null;
                 }
                 else if (

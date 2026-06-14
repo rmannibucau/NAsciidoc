@@ -720,6 +720,7 @@ public class AsciidoctorLikeHtmlRenderer : Visitor<string>
                             Text.Styling.Bold => "b",
                             Text.Styling.Italic => "i",
                             Text.Styling.Emphasis => "em",
+                            Text.Styling.Strikethrough => "del",
                             Text.Styling.Sub => "sub",
                             Text.Styling.Sup => "sup",
                             _ => "span",
@@ -994,6 +995,30 @@ public class AsciidoctorLikeHtmlRenderer : Visitor<string>
                     );
                     builder.Append(">\n");
                 }
+                else if (
+                    element.Options.TryGetValue("role", out var sidebarRole)
+                    && sidebarRole.Contains("sidebarblock")
+                )
+                {
+                    builder.Append(" <div");
+                    WriteCommonAttributes(
+                        element.Options,
+                        c => "sidebarblock" + (c != null && c != "sidebarblock" ? ' ' + c : "")
+                    );
+                    builder.Append(">\n");
+                }
+                else if (
+                    element.Options.TryGetValue("role", out var exampleRole)
+                    && exampleRole.Contains("exampleblock")
+                )
+                {
+                    builder.Append(" <div");
+                    WriteCommonAttributes(
+                        element.Options,
+                        c => "exampleblock" + (c != null && c != "exampleblock" ? ' ' + c : "")
+                    );
+                    builder.Append(">\n");
+                }
                 else
                 {
                     skipDiv = true;
@@ -1006,6 +1031,10 @@ public class AsciidoctorLikeHtmlRenderer : Visitor<string>
                         element.Options,
                         c => "content" + (c == null ? "" : (' ' + c))
                     );
+                }
+                else
+                {
+                    builder.Append(" class=\"content\"");
                 }
                 builder.Append(">\n");
                 base.VisitOpenBlock(element);
